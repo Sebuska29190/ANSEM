@@ -51,7 +51,7 @@ export function PriceTicker({ metrics, isLoading }: PriceTickerProps) {
           </motion.div>
         </AnimatePresence>
         <p className="mt-1 text-sm text-muted">
-          Last update: {new Date(metrics.updatedAt).toLocaleTimeString("pl-PL")}
+          Last update: {new Date(metrics.updatedAt).toLocaleTimeString("en-US")}
         </p>
       </CardContent>
     </Card>

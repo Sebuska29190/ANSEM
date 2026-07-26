@@ -32,7 +32,7 @@ export async function generateAINews(
         {
           role: "system",
           content:
-            "You are a crypto market analyst specialized in Solana memecoins. Write concise, factual news in Polish. Return only a JSON object with keys: content (string, max 3 sentences), sentiment (string: bullish|bearish|neutral).",
+            "You are a crypto market analyst specialized in Solana memecoins. Write concise, factual news in English. Return only a JSON object with keys: content (string, max 3 sentences), sentiment (string: bullish|bearish|neutral).",
         },
         { role: "user", content: prompt },
       ],
@@ -74,12 +74,12 @@ export async function generateAINews(
 function buildPrompt(data: GenerateNewsInput): string {
   return `
 Token: ANSEM (Solana)
-Cena: $${data.priceUsd}
-Zmiana 24h: ${data.priceChange24h ?? "N/A"}%
-Wolumen 24h: $${data.volume24h ?? "N/A"}
-Płynność: $${data.liquidityUsd ?? "N/A"}
+Price: $${data.priceUsd}
+24h change: ${data.priceChange24h ?? "N/A"}%
+24h volume: $${data.volume24h ?? "N/A"}
+Liquidity: $${data.liquidityUsd ?? "N/A"}
 
-Napisz krótki news po polsku (max 3 zdania) podsumowujący aktualną sytuację tokena ANSEM.
+Write a short English news update (max 3 sentences) summarizing the current situation of the ANSEM token.
 `.trim();
 }
 
