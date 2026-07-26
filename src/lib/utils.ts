@@ -1,68 +1,38 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
+/** Standard tailwind-merge helper used everywhere we combine class names. */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatUsd(value: number | undefined): string {
-  if (value === undefined || Number.isNaN(value)) return "$—";
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: value < 1 ? 6 : 2,
-    maximumFractionDigits: value < 1 ? 8 : 2,
-  }).format(value);
+/**
+ * Wallet / signature truncator.
+ *   "9cRCn9rGT8V2imeM2BaKs13yhMEais3ruM3rPvTGpump"
+ * →  "9cRC…pump"
+ */
+export function truncateWallet(w: string | null | undefined, head = 4, tail = 4): string {
+  if (!w) return "—";
+  if (w.length <= head + tail) return w;
+  return `${w.slice(0, head)}…${w.slice(-tail)}`;
 }
 
-export function formatCompactUsd(value: number | undefined): string {
-  if (value === undefined || Number.isNaN(value)) return "$—";
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    notation: "compact",
-    maximumFractionDigits: 2,
-  }).format(value);
+/** Format a USD-ish big number for tickers (K / M / B with 2 dp). */
+export function formatBigUSD(n: number | null | undefined): string {
+  if (n === null || n === undefined) return "—";
+  if (n >= 1e9) return `$${(n / 1e9).toFixed(2)}B`;
+  if (n >= 1e6) return `$${(n / 1e6).toFixed(2)}M`;
+  if (n >= 1e3) return `$${(n / 1e3).toFixed(2)}K`;
+  return `$${n.toLocaleString("en-US")}`;
 }
 
-export function formatNumber(value: number | undefined, decimals = 2): string {
-  if (value === undefined || Number.isNaN(value)) return "—";
-  return new Intl.NumberFormat("en-US", {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  }).format(value);
-}
-
-export function formatCompactNumber(value: number | undefined): string {
-  if (value === undefined || Number.isNaN(value)) return "—";
-  return new Intl.NumberFormat("en-US", {
-    notation: "compact",
-    maximumFractionDigits: 2,
-  }).format(value);
-}
-
-export function formatPercent(value: number | undefined): string {
-  if (value === undefined || Number.isNaN(value)) return "—%";
-  const sign = value > 0 ? "+" : "";
-  return `${sign}${value.toFixed(2)}%`;
-}
-
-export function truncateWallet(address: string, start = 4, end = 4): string {
-  if (!address) return "";
-  if (address.length <= start + end) return address;
-  return `${address.slice(0, start)}...${address.slice(-end)}`;
-}
-
-export function timeAgo(timestamp: number | string | Date): string {
-  const now = Date.now();
-  const then = new Date(timestamp).getTime();
-  const diff = now - then;
-  const seconds = Math.floor(diff / 1000);
-  if (seconds < 60) return `${seconds}s ago`;
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
+/** Compact age label like "12s", "5m", "3h". */
+export function timeAgo(ts: number, now: number = Date.now()): string {
+  const s = Math.max(0, Math.floor((now - ts) / 1000));
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h`;
+  return `${Math.floor(h / 24)}d`;
 }

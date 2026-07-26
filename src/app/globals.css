@@ -2,100 +2,137 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * ANSEM Token Terminal — global stylesheet
+ * ----------------------------------------------------
+ *  - Tabular numerals for ticker-grade number alignment
+ *  - Liquid glass surfaces via .glass-panel
+ *  - Custom scrollbar (orange/black)
+ *  - Subtle SVG noise + radial CTA halo
+ *  - Reduced-motion honoured via !important overrides
+ */
+
 :root {
-  --background: #030305;
-  --foreground: #fafafa;
-  --card: #0b0b11;
-  --card-foreground: #fafafa;
-  --muted: #8a8a98;
+  color-scheme: dark;
+  --bg: #050505;
+  --ink: #fafafa;
   --border: rgba(255, 255, 255, 0.06);
-  --accent: #9945ff;
-  --accent-2: #14f195;
 }
 
-html {
-  scroll-behavior: smooth;
-}
-
+html,
 body {
-  color: var(--foreground);
-  background: var(--background);
+  background: var(--bg);
+  color: var(--ink);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
-  font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-.bg-ansem {
-  background-image: url("/bg-suggestion.png");
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
+/* Tabular numeric alignment — essential for tickers */
+.numeric,
+table,
+.font-mono {
+  font-variant-numeric: tabular-nums;
 }
 
-.bg-overlay {
-  background: linear-gradient(180deg, rgba(3, 3, 5, 0.88), rgba(3, 3, 5, 0.98));
+.terminal-grid {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-position: -1px -1px;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: #2a2a2a;
+  border-radius: 999px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: #ff4500;
+}
+
+::selection {
+  background: rgba(255, 69, 0, 0.85);
+  color: #050505;
 }
 
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-
-  .glass {
-    @apply bg-[#0b0b11]/80 backdrop-blur-2xl border border-white/[0.06] rounded-2xl;
+  .glass-panel {
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
     box-shadow:
-      inset 0 1px 1px 0 rgba(255, 255, 255, 0.05),
-      0 4px 24px -4px rgba(0, 0, 0, 0.5);
+      inset 0 1px 0 0 rgba(255,255,255,0.04),
+      0 30px 60px -20px rgba(0,0,0,0.6);
   }
 
-  .glow-text {
-    text-shadow: 0 0 20px rgba(153, 69, 255, 0.35);
+  .glass-deep {
+    background: rgba(10, 10, 10, 0.78);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
   }
 
-  .glow-border {
-    box-shadow: 0 0 24px rgba(153, 69, 255, 0.12);
+  .text-gradient-ember {
+    background: linear-gradient(180deg, #ffb07a, #ff4500 50%, #c73600);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
 
-  .text-gradient-neon {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-[#9945ff] to-[#14f195];
+  .text-gradient-gold {
+    background: linear-gradient(180deg, #ffe7a8, #f5c26b);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .border-gradient {
+    border: 1px solid transparent;
+    background:
+      linear-gradient(#0a0a0a, #0a0a0a) padding-box,
+      linear-gradient(135deg, rgba(255,69,0,0.6), rgba(245,194,107,0.4)) border-box;
   }
 
   .noise-overlay {
     position: relative;
+    isolation: isolate;
   }
-
   .noise-overlay > * {
     position: relative;
     z-index: 1;
   }
-
   .noise-overlay::before {
     content: "";
     position: absolute;
     inset: 0;
     pointer-events: none;
-    opacity: 0.03;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     z-index: 0;
   }
-}
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #252535;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #9945ff;
+  /* Honour prefers-reduced-motion for ALL decorative animations,
+     including Tailwind utility classes. */
+  @media (prefers-reduced-motion: reduce) {
+    .ticker-scroll,
+    .ring-orbit,
+    .border-shimmer,
+    .bull-glow,
+    .ember-pulse,
+    .animate-ticker-scroll,
+    .animate-ring-orbit,
+    .animate-border-shimmer,
+    .animate-bull-glow,
+    .animate-ember-pulse {
+      animation: none !important;
+    }
+  }
 }

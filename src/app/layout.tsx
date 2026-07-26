@@ -1,48 +1,78 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
-import "./globals.css";
 import { Providers } from "@/components/Providers";
+import "./globals.css";
+
+/**
+ * Root layout for the ANSEM Token Terminal.
+ * Sets metadata + fonts (using the locally shipped Geist woff files)
+ * and the providers tree.
+ */
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
-  weight: "100 900",
+  display: "swap",
 });
+
 const geistMono = localFont({
   src: "./fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
-  weight: "100 900",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "ANSEM.AI — Solana Token Terminal",
-  description:
-    "Live ANSEM token dashboard with real-time price, charts, swaps, liquidity and AI-generated news on Solana.",
   metadataBase: new URL("https://ansemlive.netlify.app"),
+  title: "ANSEM — The Black Bull Terminal | Solana",
+  description:
+    "Live ANSEM token terminal on Solana. Real-time price, on-chain swaps, liquidity pools, AI-curated news, and the official $ANSEM dashboard powered by DexScreener, Helius and DeepSeek.",
+  applicationName: "ANSEM Terminal",
+  keywords: [
+    "ANSEM",
+    "The Black Bull",
+    "Solana",
+    "memecoin",
+    "token terminal",
+    "pump.fun",
+    "Raydium",
+    "DexScreener",
+  ],
+  authors: [{ name: "blknoiz06" }],
   openGraph: {
-    title: "ANSEM.AI — Solana Token Terminal",
-    description: "Live ANSEM token dashboard with real-time data and AI news.",
-    images: [{ url: "/og-image.png" }],
+    title: "ANSEM — The Black Bull Terminal",
+    description:
+      "Premium Solana token terminal for $ANSEM. Live data, AI news, and on-chain intelligence.",
+    url: "https://ansemlive.netlify.app",
+    siteName: "ANSEM Terminal",
+    type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    site: "@blknoiz06",
+    title: "ANSEM — The Black Bull Terminal",
+    description: "$ANSEM live data, swaps, liquidity and AI news in one place.",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#050505",
+  colorScheme: "dark",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-ansem min-h-screen`}
-      >
-        <div className="bg-overlay noise-overlay min-h-screen">
-          <Providers>{children}</Providers>
-        </div>
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable}`}
+      suppressHydrationWarning
+    >
+      <body className="min-h-screen bg-ink text-ink antialiased noise-overlay">
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

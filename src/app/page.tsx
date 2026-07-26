@@ -1,94 +1,110 @@
-"use client";
-
-import { useMemo } from "react";
-import { Header } from "@/components/dashboard/Header";
-import { Footer } from "@/components/dashboard/Footer";
-import { PriceTicker } from "@/components/dashboard/PriceTicker";
-import { MarketStats } from "@/components/dashboard/MarketStats";
-import { ChartContainer } from "@/components/dashboard/ChartContainer";
-import { AINewsFeed } from "@/components/dashboard/AINewsFeed";
+import { Hero } from "@/components/dashboard/Hero";
+import { TickerStrip } from "@/components/dashboard/TickerStrip";
+import { TradingViewChart } from "@/components/dashboard/TradingViewChart";
+import { LiveStats } from "@/components/dashboard/LiveStats";
 import { SwapTable } from "@/components/dashboard/SwapTable";
+import { AINewsFeed } from "@/components/dashboard/AINewsFeed";
 import { LiquidityPools } from "@/components/dashboard/LiquidityPools";
 import { LiquidityActivity } from "@/components/dashboard/LiquidityActivity";
 import { TokenInfo } from "@/components/dashboard/TokenInfo";
 import { SocialLinks } from "@/components/dashboard/SocialLinks";
-import { useTokenData } from "@/hooks/useTokenData";
-import { useSwaps } from "@/hooks/useSwaps";
-import { useLiquidity } from "@/hooks/useLiquidity";
-import { useAINews } from "@/hooks/useAINews";
-import { generateMockChartData } from "@/lib/chart-data";
+import { Footer } from "@/components/dashboard/Footer";
+import { ScrollReveal } from "@/components/ui/ScrollReveal";
+import { Eyebrow } from "@/components/ui/GlassPanel";
 
-export default function DashboardPage() {
-  const { data: tokenData, isLoading: isTokenLoading } = useTokenData();
-  const { data: swaps = [], isLoading: isSwapsLoading } = useSwaps();
-  const { data: liquidity = [], isLoading: isLiquidityLoading } = useLiquidity();
-  const { data: news = [], isLoading: isNewsLoading } = useAINews();
-
-  const chartData = useMemo(
-    () => generateMockChartData(tokenData?.metrics?.priceUsd ?? 0),
-    [tokenData?.metrics?.priceUsd]
-  );
-
+/**
+ * ANSEM Token Terminal — landing page composition.
+ *
+ * Section order (top → bottom):
+ *   01 Hero            — monumental headline + price + CTAs + bull emblem
+ *   -- TickerStrip     — slim horizontal data tape
+ *   01 Live Chart      — TradingView / DexScreener iframe + canvas fallback
+ *      + Live Stats    — right-rail stats grid (price, MC, FDV, vol, liq, holders)
+ *   02 On-Chain        — SwapTable (left, dominant) + AINewsFeed (right)
+ *   03 Liquidity       — LiquidityPools + LiquidityActivity (two-up)
+ *   04 Token & Links   — TokenInfo + SocialLinks (two-up)
+ *   ── Footer
+ *
+ * The page itself is a Server Component — every interactive block
+ * is "\"use client\"" itself.
+ */
+export default function Page() {
   return (
-    <div className="min-h-screen text-foreground">
-      <Header />
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-12">
-          {/* Hero metrics */}
-          <div className="md:col-span-4">
-            <PriceTicker
-              metrics={tokenData?.metrics}
-              isLoading={isTokenLoading}
-            />
-          </div>
-          <div className="md:col-span-8">
-            <MarketStats
-              metrics={tokenData?.metrics}
-              isLoading={isTokenLoading}
-            />
-          </div>
+    <main className="relative min-h-screen overflow-hidden">
+      {/* Global ember halo behind the entire page */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed left-1/2 top-0 -z-10 h-[640px] w-[1100px] -translate-x-1/2 blur-3xl"
+        style={{
+          background:
+            "radial-gradient(ellipse, rgba(255,69,0,0.12) 0%, transparent 60%)",
+        }}
+      />
 
-          {/* Chart */}
-          <div className="md:col-span-8">
-            <ChartContainer
-              candles={chartData.candles}
-              lineData={chartData.line}
-              isLoading={isTokenLoading}
-            />
-          </div>
+      <Hero />
+      <TickerStrip />
 
-          {/* AI News */}
-          <div className="md:col-span-4">
-            <AINewsFeed news={news} isLoading={isNewsLoading} />
+      {/* 01 — Live chart + stats */}
+      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <ScrollReveal>
+          <Eyebrow index="01" label="Market" />
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+            <div className="lg:col-span-8">
+              <TradingViewChart />
+            </div>
+            <div className="lg:col-span-4">
+              <LiveStats />
+            </div>
           </div>
+        </ScrollReveal>
+      </section>
 
-          {/* Swaps feed */}
-          <div className="md:col-span-8">
-            <SwapTable swaps={swaps} isLoading={isSwapsLoading} />
+      {/* 02 — On-chain swaps + AI news */}
+      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <ScrollReveal>
+          <Eyebrow index="02" label="On-Chain Intelligence" />
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+            <div className="lg:col-span-8">
+              <SwapTable />
+            </div>
+            <div className="lg:col-span-4">
+              <AINewsFeed />
+            </div>
           </div>
+        </ScrollReveal>
+      </section>
 
-          {/* Right column */}
-          <div className="md:col-span-4 space-y-4">
-            <LiquidityPools
-              pairs={tokenData?.pairs ?? []}
-              isLoading={isTokenLoading}
-            />
-            <LiquidityActivity
-              events={liquidity}
-              isLoading={isLiquidityLoading}
-            />
+      {/* 03 — Liquidity pools + activity */}
+      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <ScrollReveal>
+          <Eyebrow index="03" label="Liquidity" />
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+            <div className="lg:col-span-7">
+              <LiquidityPools />
+            </div>
+            <div className="lg:col-span-5">
+              <LiquidityActivity />
+            </div>
           </div>
+        </ScrollReveal>
+      </section>
 
-          {/* Token info & social */}
-          <div className="md:col-span-8">
-            <TokenInfo />
+      {/* 04 — Token info + Community */}
+      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <ScrollReveal>
+          <Eyebrow index="04" label="Token & Community" />
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+            <div className="lg:col-span-5">
+              <TokenInfo />
+            </div>
+            <div className="lg:col-span-7">
+              <SocialLinks />
+            </div>
           </div>
-          <div className="md:col-span-4">
-            <SocialLinks />
-          </div>
-        </div>
-      </main>
+        </ScrollReveal>
+      </section>
+
       <Footer />
-    </div>
+    </main>
   );
 }

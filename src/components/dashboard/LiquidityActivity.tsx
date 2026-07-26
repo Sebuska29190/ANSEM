@@ -1,85 +1,105 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { formatCompactUsd, truncateWallet, timeAgo } from "@/lib/utils";
-import type { LiquidityEvent } from "@/types";
-import { Plus, Minus } from "lucide-react";
+import { Plus, Minus, ArrowUpRight } from "lucide-react";
+import { useLiquidity } from "@/hooks/useLiquidity";
+import { ANSEM_ADDRESS } from "@/lib/constants";
+import { truncateWallet, timeAgo } from "@/lib/utils";
 
-interface LiquidityActivityProps {
-  events: LiquidityEvent[];
-  isLoading?: boolean;
+/**
+ * LiquidityActivity — recent on-chain pool adds/removes.
+ * Companion panel to SwapTable.
+ */
+
+function usd(n: number) {
+  if (n >= 1e6) return `$${(n / 1e6).toFixed(2)}M`;
+  if (n >= 1e3) return `$${(n / 1e3).toFixed(2)}K`;
+  return `$${n.toLocaleString("en-US")}`;
 }
 
-export function LiquidityActivity({ events, isLoading }: LiquidityActivityProps) {
+export function LiquidityActivity() {
+  const { data, isLoading } = useLiquidity();
+  const items = (data ?? []).slice(0, 12);
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">Liquidity Activity</CardTitle>
-      </CardHeader>
-      <CardContent>
+    <section className="glass-panel overflow-hidden rounded-2xl">
+      <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-3">
+        <div className="flex items-center gap-2">
+          <ArrowUpRight className="h-4 w-4 text-gold" />
+          <span className="text-xs font-bold uppercase tracking-[0.2em] text-terminal-dim">
+            Liquidity Activity
+          </span>
+        </div>
+        <span className="rounded-full bg-gold/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-gold">
+          24h
+        </span>
+      </div>
+
+      <ul className="max-h-[420px] divide-y divide-white/[0.04] overflow-y-auto">
         {isLoading ? (
-          <div className="space-y-2">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-10 animate-pulse rounded bg-white/[0.05]" />
-            ))}
-          </div>
-        ) : events.length === 0 ? (
-          <div className="flex h-40 items-center justify-center rounded-xl border border-dashed border-white/[0.06] text-muted text-sm">
-            No liquidity activity available.
-          </div>
+          [...Array(4)].map((_, i) => (
+            <li key={i} className="h-14 animate-pulse bg-white/[0.02]" />
+          ))
+        ) : items.length === 0 ? (
+          <li className="px-5 py-10 text-center text-sm text-terminal-dim">
+            No liquidity events in window.
+          </li>
         ) : (
-          <>
-            <div className="space-y-2">
-              <AnimatePresence>
-                {events.map((event) => (
-                  <motion.div
-                    key={event.txSignature}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 10 }}
-                    className="flex items-center justify-between rounded-xl border border-white/[0.04] bg-white/[0.03] p-3"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Badge
-                        variant={event.type === "added" ? "success" : "danger"}
-                        className="gap-1"
-                      >
-                        {event.type === "added" ? (
-                          <Plus className="h-3 w-3" />
-                        ) : (
-                          <Minus className="h-3 w-3" />
-                        )}
-                        {event.type === "added" ? "Added" : "Removed"}
-                      </Badge>
-                      <div>
-                        <p className="text-sm font-medium text-white">
-                          {event.solAmount.toFixed(2)} SOL
-                        </p>
-                        <p className="text-xs text-muted">
-                          {truncateWallet(event.wallet)}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium text-white">
-                        {formatCompactUsd(event.usdValue)}
-                      </p>
-                      <p className="text-xs text-muted">
-                        {timeAgo(event.timestamp)}
-                      </p>
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
-            <p className="mt-3 text-xs text-muted">
-              Representative feed derived from DexScreener pool aggregates, not individual on-chain transactions.
-            </p>
-          </>
+          items.map((e) => (
+            <li
+              key={e.txSignature}
+              className={`flex items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-white/[0.025] ${
+                e.type === "added"
+                  ? "border-l-2 border-l-bull-up/40"
+                  : "border-l-2 border-l-bull-down/40"
+              }`}
+            >
+              <div className="flex min-w-0 items-center gap-3">
+                <span
+                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
+                    e.type === "added"
+                      ? "bg-bull-up/10 text-bull-up"
+                      : "bg-bull-down/10 text-bull-down"
+                  }`}
+                >
+                  {e.type === "added" ? (
+                    <Plus className="h-3.5 w-3.5" />
+                  ) : (
+                    <Minus className="h-3.5 w-3.5" />
+                  )}
+                </span>
+                <div className="min-w-0">
+                  <div className="font-mono text-xs text-white">
+                    {e.solAmount.toLocaleString("en-US", { maximumFractionDigits: 2 })}{" "}
+                    <span className="text-terminal-dim">SOL</span>
+                    <span className="text-terminal-dim"> · </span>
+                    {(e.tokenAmount / 1e6).toFixed(2)}M{" "}
+                    <span className="text-terminal-dim">ANSEM</span>
+                  </div>
+                  <div className="font-mono text-[10px] text-terminal-dim">
+                    {truncateWallet(e.wallet)}
+                  </div>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="font-mono text-xs text-white">{usd(e.usdValue)}</div>
+                <div className="font-mono text-[10px] text-terminal-dim">
+                  {timeAgo(e.timestamp)}
+                </div>
+              </div>
+            </li>
+          ))
         )}
-      </CardContent>
-    </Card>
+      </ul>
+      <div className="border-t border-white/[0.06] px-5 py-2 text-[10px] text-terminal-dim">
+        <a
+          href={`https://solscan.io/token/${ANSEM_ADDRESS}`}
+          target="_blank"
+          rel="noreferrer"
+          className="transition-colors hover:text-ember"
+        >
+          Verify on Solscan →
+        </a>
+      </div>
+    </section>
   );
 }

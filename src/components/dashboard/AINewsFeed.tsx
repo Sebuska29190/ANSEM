@@ -1,70 +1,103 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { timeAgo } from "@/lib/utils";
-import type { AINewsItem } from "@/types";
-import { Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
+import { Sparkles, ThumbsUp, ThumbsDown, Minus } from "lucide-react";
+import { useAINews } from "@/hooks/useAINews";
 
-interface AINewsFeedProps {
-  news: AINewsItem[];
-  isLoading?: boolean;
+/**
+ * AINewsFeed — hacker-terminal feed rendered as a typographic card stack.
+ * Each card shows: sentiment chip · timestamp · monospace content.
+ * Loader is a shimmering skeleton stack. Empty state is direct copy.
+ */
+
+function timeAgo(ts: number): string {
+  const m = Math.floor((Date.now() - ts) / 60_000);
+  if (m < 1) return "just now";
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
 }
 
-const sentimentVariant = {
-  bullish: "success" as const,
-  bearish: "danger" as const,
-  neutral: "neutral" as const,
-};
+function SentimentIcon({ s }: { s: "bullish" | "bearish" | "neutral" }) {
+  if (s === "bullish") return <ThumbsUp className="h-3 w-3 text-bull-up" />;
+  if (s === "bearish") return <ThumbsDown className="h-3 w-3 text-bull-down" />;
+  return <Minus className="h-3 w-3 text-terminal-dim" />;
+}
 
-export function AINewsFeed({ news, isLoading }: AINewsFeedProps) {
+function sentimentChipClass(s: "bullish" | "bearish" | "neutral") {
+  return s === "bullish"
+    ? "bg-bull-up/10 text-bull-up ring-bull-up/30"
+    : s === "bearish"
+    ? "bg-bull-down/10 text-bull-down ring-bull-down/30"
+    : "bg-white/[0.04] text-terminal-dim ring-white/[0.06]";
+}
+
+export function AINewsFeed() {
+  const { data: news, isLoading } = useAINews();
+
   return (
-    <Card className="flex h-[420px] flex-col">
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="flex items-center gap-2 text-base">
-          <Sparkles className="h-4 w-4 text-ansem-accent" />
-          AI News Feed
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex-1 space-y-3 overflow-y-auto pr-1">
+    <section className="glass-panel flex h-[420px] flex-col overflow-hidden rounded-2xl">
+      <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-3">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-gold" />
+          <span className="text-xs font-bold uppercase tracking-[0.2em] text-terminal-dim">
+            AI Intelligence
+          </span>
+        </div>
+        <span className="rounded-full bg-gold/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-gold">
+          Daily · DeepSeek
+        </span>
+      </div>
+
+      <div className="flex-1 space-y-2 overflow-y-auto p-4 pr-2">
         {isLoading ? (
           <>
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-24 w-full" />
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="h-24 animate-pulse rounded-xl bg-white/[0.03]" />
+            ))}
           </>
-        ) : news.length === 0 ? (
-          <div className="flex h-40 items-center justify-center rounded-xl border border-dashed border-white/[0.06] text-muted">
-            No AI news yet. First generation will happen soon.
+        ) : !news || news.length === 0 ? (
+          <div className="flex h-full flex-col items-center justify-center text-center text-sm text-terminal-dim">
+            <Sparkles className="mb-2 h-6 w-6 text-gold/40" />
+            Awaiting first AI briefing.
+            <br />
+            <span className="mt-1 text-xs">
+              Scheduled function publishes every 4 hours.
+            </span>
           </div>
         ) : (
-          <AnimatePresence>
-            {news.map((item) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4 transition-colors hover:border-ansem-accent/30"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <p className="flex-1 text-sm leading-relaxed text-foreground">
-                    {item.content}
-                  </p>
-                  <Badge variant={sentimentVariant[item.sentiment]}>
-                    {item.sentiment}
-                  </Badge>
-                </div>
-                <p className="mt-2 text-xs text-muted">
-                  {timeAgo(item.createdAt)} · based on live market data
-                </p>
-              </motion.div>
-            ))}
-          </AnimatePresence>
+          news.slice(0, 6).map((item, i) => (
+            <motion.article
+              key={item.id}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: i * 0.05 }}
+              className="group rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 transition-all hover:border-gold/30 hover:bg-gold/[0.03]"
+            >
+              <header className="mb-2 flex items-center justify-between">
+                <span
+                  className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.2em] ring-1 ${sentimentChipClass(
+                    item.sentiment,
+                  )}`}
+                >
+                  <SentimentIcon s={item.sentiment} />
+                  {item.sentiment}
+                </span>
+                <time
+                  dateTime={new Date(item.createdAt).toISOString()}
+                  className="font-mono text-[10px] text-terminal-dim"
+                >
+                  {timeAgo(item.createdAt)}
+                </time>
+              </header>
+              <p className="text-sm leading-relaxed text-white">
+                {item.content}
+              </p>
+            </motion.article>
+          ))
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }
