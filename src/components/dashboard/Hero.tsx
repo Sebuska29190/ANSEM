@@ -205,7 +205,7 @@ export function Hero() {
               href={LINKS.jupiter}
               target="_blank"
               rel="noopener noreferrer"
-              className="group relative inline-flex items-center gap-2 rounded-xl bg-ember px-6 py-3.5 text-sm font-bold uppercase tracking-[0.18em] text-white shadow-ember transition-transform hover:-translate-y-0.5 animate-ember-pulse"
+              className="group relative inline-flex items-center gap-2 rounded-xl bg-ember px-6 py-3.5 text-sm font-bold uppercase tracking-[0.18em] text-white shadow-ember transition-transform hover:-translate-y-0.5 animate-ember-pulse focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember"
             >
               <Zap className="h-4 w-4" />
               Trade $ANSEM
@@ -215,14 +215,14 @@ export function Hero() {
               href={LINKS.dexscreener}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-6 py-3.5 text-sm font-bold uppercase tracking-[0.18em] text-white backdrop-blur-md transition-colors hover:border-ember/60 hover:bg-ember/10"
+              className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-6 py-3.5 text-sm font-bold uppercase tracking-[0.18em] text-white backdrop-blur-md transition-colors hover:border-ember/60 hover:bg-ember/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember"
             >
               <Activity className="h-4 w-4" />
               DexScreener
             </a>
             <button
               onClick={copyCA}
-              className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-6 py-3.5 text-sm font-bold uppercase tracking-[0.18em] text-white backdrop-blur-md transition-colors hover:border-gold/60 hover:bg-gold/10"
+              className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-6 py-3.5 text-sm font-bold uppercase tracking-[0.18em] text-white backdrop-blur-md transition-colors hover:border-gold/60 hover:bg-gold/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
               aria-label="Copy contract address"
             >
               {copied ? (

@@ -49,7 +49,7 @@ export function TickerStrip() {
         aria-hidden
       >
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-ember/60 to-transparent" />
-        <div className="flex h-[50px] items-center justify-center gap-2 px-4 text-[10px] font-bold uppercase tracking-[0.2em] text-terminal-dim">
+        <div className="flex h-[52px] min-h-[52px] items-center justify-center gap-2 px-4 text-[10px] font-bold uppercase tracking-[0.2em] text-terminal-dim">
           <span className="relative flex h-1.5 w-1.5">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-ember opacity-50" />
             <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-ember" />
