@@ -5,8 +5,11 @@ export function useSwaps() {
   return useQuery<SwapEvent[]>({
     queryKey: ["ansem-swaps"],
     queryFn: async () => {
-      // Placeholder: real-time swaps require Helius WebSocket or Birdeye paid tier.
-      return [];
+      const res = await fetch("/api/swaps");
+      if (!res.ok) {
+        throw new Error(`Swaps API error: ${res.status}`);
+      }
+      return (await res.json()) as SwapEvent[];
     },
     refetchInterval: 30_000,
     staleTime: 20_000,

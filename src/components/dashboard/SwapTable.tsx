@@ -35,61 +35,66 @@ export function SwapTable({ swaps, isLoading }: SwapTableProps) {
           </div>
         ) : swaps.length === 0 ? (
           <div className="flex h-40 items-center justify-center rounded-xl border border-dashed border-white/10 text-muted text-sm">
-            Real-time swap feed requires Helius WebSocket or Birdeye API.
+            No swap data available.
           </div>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Type</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>USD</TableHead>
-                <TableHead>Wallet</TableHead>
-                <TableHead>Time</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <AnimatePresence>
-                {swaps.map((swap) => (
-                  <motion.tr
-                    key={swap.txHash}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
-                    className="border-b border-white/5 transition-colors hover:bg-white/5"
-                  >
-                    <TableCell>
-                      <Badge
-                        variant={swap.type === "buy" ? "success" : "danger"}
-                        className="gap-1"
-                      >
-                        {swap.type === "buy" ? (
-                          <ArrowUpRight className="h-3 w-3" />
-                        ) : (
-                          <ArrowDownRight className="h-3 w-3" />
-                        )}
-                        {swap.type.toUpperCase()}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="font-mono text-white">
-                      {swap.amountIn.toFixed(4)} SOL
-                    </TableCell>
-                    <TableCell>
-                      {swap.usdValue
-                        ? formatCompactUsd(swap.usdValue)
-                        : "—"}
-                    </TableCell>
-                    <TableCell className="font-mono text-xs text-muted">
-                      {truncateWallet(swap.wallet)}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted">
-                      {timeAgo(swap.timestamp)}
-                    </TableCell>
-                  </motion.tr>
-                ))}
-              </AnimatePresence>
-            </TableBody>
-          </Table>
+          <>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>USD</TableHead>
+                  <TableHead>Wallet</TableHead>
+                  <TableHead>Time</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <AnimatePresence>
+                  {swaps.map((swap) => (
+                    <motion.tr
+                      key={swap.txHash}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 20 }}
+                      className="border-b border-white/5 transition-colors hover:bg-white/5"
+                    >
+                      <TableCell>
+                        <Badge
+                          variant={swap.type === "buy" ? "success" : "danger"}
+                          className="gap-1"
+                        >
+                          {swap.type === "buy" ? (
+                            <ArrowUpRight className="h-3 w-3" />
+                          ) : (
+                            <ArrowDownRight className="h-3 w-3" />
+                          )}
+                          {swap.type.toUpperCase()}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="font-mono text-white">
+                        {swap.amountIn.toFixed(4)} {swap.tokenIn}
+                      </TableCell>
+                      <TableCell>
+                        {swap.usdValue
+                          ? formatCompactUsd(swap.usdValue)
+                          : "—"}
+                      </TableCell>
+                      <TableCell className="font-mono text-xs text-muted">
+                        {truncateWallet(swap.wallet)}
+                      </TableCell>
+                      <TableCell className="text-xs text-muted">
+                        {timeAgo(swap.timestamp)}
+                      </TableCell>
+                    </motion.tr>
+                  ))}
+                </AnimatePresence>
+              </TableBody>
+            </Table>
+            <p className="mt-3 text-xs text-muted">
+              Representative feed derived from 24h DexScreener aggregates, not individual on-chain transactions.
+            </p>
+          </>
         )}
       </CardContent>
     </Card>
