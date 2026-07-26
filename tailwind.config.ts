@@ -13,12 +13,12 @@ const config: Config = {
         background: "var(--background)",
         foreground: "var(--foreground)",
         muted: "var(--muted)",
-        "muted-foreground": "var(--muted-foreground)",
+        "muted-foreground": "var(--muted)",
         ansem: {
-          900: "#0a0a0f",
-          800: "#13131f",
-          700: "#1a1a2e",
-          600: "#252545",
+          900: "#030305",
+          800: "#0b0b11",
+          700: "#151521",
+          600: "#1f1f2d",
           accent: "#9945ff",
           accent2: "#14f195",
           up: "#22c55e",
@@ -31,7 +31,7 @@ const config: Config = {
       },
       backgroundImage: {
         "hero-gradient":
-          "radial-gradient(circle at 50% 0%, rgba(153,69,255,0.15), transparent 50%)",
+          "radial-gradient(circle at 50% 0%, rgba(153,69,255,0.12), transparent 50%)",
       },
     },
   },

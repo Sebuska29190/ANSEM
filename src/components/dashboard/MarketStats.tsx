@@ -42,31 +42,33 @@ export function MarketStats({ metrics, isLoading }: MarketStatsProps) {
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {stats.map((stat, index) => (
-        <Card key={stat.label} className="relative overflow-hidden">
-          <CardContent className="p-5">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-ansem-accent/10 text-ansem-accent">
-                <stat.icon className="h-5 w-5" />
+    <Card className="h-full">
+      <CardContent className="flex h-full flex-col justify-center p-5">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          {stats.map((stat, index) => (
+            <div key={stat.label} className="flex items-center gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-ansem-700 text-ansem-accent">
+                <stat.icon className="h-4 w-4" />
               </div>
-              <span className="text-sm text-muted">{stat.label}</span>
+              <div>
+                <span className="block text-xs text-muted">{stat.label}</span>
+                {isLoading ? (
+                  <Skeleton className="mt-1.5 h-5 w-24" />
+                ) : (
+                  <motion.p
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="mt-0.5 text-lg font-bold tracking-tight text-white"
+                  >
+                    {stat.value}
+                  </motion.p>
+                )}
+              </div>
             </div>
-            {isLoading ? (
-              <Skeleton className="mt-3 h-7 w-28" />
-            ) : (
-              <motion.p
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="mt-3 text-2xl font-bold text-white"
-              >
-                {stat.value}
-              </motion.p>
-            )}
-          </CardContent>
-        </Card>
-      ))}
-    </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

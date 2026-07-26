@@ -23,13 +23,13 @@ export function TokenInfo() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Info className="h-5 w-5 text-ansem-accent" />
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Info className="h-4 w-4 text-ansem-accent" />
           Token Info
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="rounded-xl border border-white/5 bg-white/5 p-4">
+        <div className="rounded-xl border border-white/[0.04] bg-white/[0.03] p-4">
           <p className="text-xs uppercase tracking-wide text-muted">Contract Address</p>
           <div className="mt-2 flex items-center justify-between gap-2">
             <code className="break-all text-sm font-mono text-white">
@@ -37,7 +37,7 @@ export function TokenInfo() {
             </code>
             <button
               onClick={handleCopy}
-              className="rounded-lg p-2 text-muted transition-colors hover:bg-white/10 hover:text-white"
+              className="rounded-lg p-2 text-muted transition-colors hover:bg-white/[0.06] hover:text-white"
               aria-label="Copy contract address"
             >
               {copied ? (
@@ -50,17 +50,17 @@ export function TokenInfo() {
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-xl border border-white/5 bg-white/5 p-4">
+          <div className="rounded-xl border border-white/[0.04] bg-white/[0.03] p-4">
             <p className="text-xs text-muted">Network</p>
             <p className="mt-1 font-semibold text-white">Solana</p>
           </div>
-          <div className="rounded-xl border border-white/5 bg-white/5 p-4">
+          <div className="rounded-xl border border-white/[0.04] bg-white/[0.03] p-4">
             <p className="text-xs text-muted">Symbol</p>
             <p className="mt-1 font-semibold text-white">ANSEM</p>
           </div>
         </div>
 
-        <div className="rounded-xl border border-white/5 bg-white/5 p-4">
+        <div className="rounded-xl border border-white/[0.04] bg-white/[0.03] p-4">
           <p className="text-xs text-muted">Social</p>
           <div className="mt-2 flex flex-wrap gap-2">
             <Badge variant="neutral">

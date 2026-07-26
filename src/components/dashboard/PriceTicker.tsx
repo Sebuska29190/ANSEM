@@ -15,11 +15,11 @@ interface PriceTickerProps {
 export function PriceTicker({ metrics, isLoading }: PriceTickerProps) {
   if (isLoading || !metrics) {
     return (
-      <Card className="glow-border">
-        <CardContent className="p-6">
+      <Card className="h-full">
+        <CardContent className="flex h-full flex-col justify-center p-6">
           <Skeleton className="h-4 w-24" />
-          <Skeleton className="mt-2 h-12 w-48" />
-          <Skeleton className="mt-2 h-4 w-32" />
+          <Skeleton className="mt-3 h-14 w-56" />
+          <Skeleton className="mt-3 h-4 w-32" />
         </CardContent>
       </Card>
     );
@@ -28,11 +28,11 @@ export function PriceTicker({ metrics, isLoading }: PriceTickerProps) {
   const isPositive = (metrics.priceChange24h ?? 0) >= 0;
 
   return (
-    <Card className="glow-border relative overflow-hidden">
+    <Card className="relative h-full overflow-hidden">
       <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-ansem-accent to-ansem-accent2" />
-      <CardContent className="p-6">
+      <CardContent className="flex h-full flex-col justify-center p-6">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-muted">ANSEM / SOL</span>
+          <span className="text-sm font-medium text-muted">ANSEM / USD</span>
           <Badge variant={isPositive ? "success" : "danger"}>
             {formatPercent(metrics.priceChange24h ?? 0)}
           </Badge>
@@ -45,13 +45,13 @@ export function PriceTicker({ metrics, isLoading }: PriceTickerProps) {
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.3 }}
           >
-            <p className="mt-2 text-4xl font-bold tracking-tight text-white glow-text">
+            <p className="mt-3 text-5xl font-bold tracking-tighter text-white glow-text">
               {formatUsd(metrics.priceUsd)}
             </p>
           </motion.div>
         </AnimatePresence>
-        <p className="mt-1 text-sm text-muted">
-          Last update: {new Date(metrics.updatedAt).toLocaleTimeString("en-US")}
+        <p className="mt-2 text-sm text-muted">
+          Last update {new Date(metrics.updatedAt).toLocaleTimeString("en-US")}
         </p>
       </CardContent>
     </Card>

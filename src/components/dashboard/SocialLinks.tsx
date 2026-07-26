@@ -9,7 +9,7 @@ export function SocialLinks() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Community</CardTitle>
+        <CardTitle className="text-base">Community</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         <Button

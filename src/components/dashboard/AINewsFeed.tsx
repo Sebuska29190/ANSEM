@@ -21,14 +21,14 @@ const sentimentVariant = {
 
 export function AINewsFeed({ news, isLoading }: AINewsFeedProps) {
   return (
-    <Card className="h-full min-h-[420px]">
+    <Card className="flex h-[420px] flex-col">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-ansem-accent" />
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Sparkles className="h-4 w-4 text-ansem-accent" />
           AI News Feed
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="flex-1 space-y-3 overflow-y-auto pr-1">
         {isLoading ? (
           <>
             <Skeleton className="h-24 w-full" />
@@ -36,7 +36,7 @@ export function AINewsFeed({ news, isLoading }: AINewsFeedProps) {
             <Skeleton className="h-24 w-full" />
           </>
         ) : news.length === 0 ? (
-          <div className="flex h-40 items-center justify-center rounded-xl border border-dashed border-white/10 text-muted">
+          <div className="flex h-40 items-center justify-center rounded-xl border border-dashed border-white/[0.06] text-muted">
             No AI news yet. First generation will happen soon.
           </div>
         ) : (
@@ -47,7 +47,7 @@ export function AINewsFeed({ news, isLoading }: AINewsFeedProps) {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="rounded-xl border border-white/5 bg-white/5 p-4 transition-colors hover:border-ansem-accent/30"
+                className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4 transition-colors hover:border-ansem-accent/30"
               >
                 <div className="flex items-start justify-between gap-3">
                   <p className="flex-1 text-sm leading-relaxed text-foreground">

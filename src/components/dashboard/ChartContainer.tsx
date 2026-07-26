@@ -24,7 +24,11 @@ interface ChartContainerProps {
 
 type ChartMode = "candle" | "line";
 
-export function ChartContainer({ candles, lineData, isLoading }: ChartContainerProps) {
+export function ChartContainer({
+  candles,
+  lineData,
+  isLoading,
+}: ChartContainerProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<SeriesType, Time> | null>(null);
@@ -36,15 +40,16 @@ export function ChartContainer({ candles, lineData, isLoading }: ChartContainerP
     const chart = createChart(chartContainerRef.current, {
       layout: {
         background: { color: "transparent" },
-        textColor: "#9ca3af",
+        textColor: "#8a8a98",
+        fontFamily: "var(--font-geist-mono), monospace",
       },
       grid: {
-        vertLines: { color: "rgba(255,255,255,0.05)" },
-        horzLines: { color: "rgba(255,255,255,0.05)" },
+        vertLines: { color: "rgba(255,255,255,0.02)" },
+        horzLines: { color: "rgba(255,255,255,0.02)" },
       },
       crosshair: { mode: 0 },
-      rightPriceScale: { borderColor: "rgba(255,255,255,0.1)" },
-      timeScale: { borderColor: "rgba(255,255,255,0.1)", timeVisible: true },
+      rightPriceScale: { borderColor: "rgba(255,255,255,0.06)" },
+      timeScale: { borderColor: "rgba(255,255,255,0.06)", timeVisible: true },
       autoSize: true,
     });
 
@@ -113,19 +118,19 @@ export function ChartContainer({ candles, lineData, isLoading }: ChartContainerP
   }, [mode, candles, lineData]);
 
   return (
-    <Card className="col-span-1 lg:col-span-2 min-h-[420px]">
+    <Card className="flex min-h-[420px] flex-col">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle>Price Chart</CardTitle>
-        <div className="flex gap-2">
+        <CardTitle className="text-base">Price Chart</CardTitle>
+        <div className="flex gap-2 rounded-lg border border-white/[0.06] p-1">
           <Button
-            variant={mode === "candle" ? "default" : "outline"}
+            variant={mode === "candle" ? "default" : "ghost"}
             size="sm"
             onClick={() => setMode("candle")}
           >
             Candle
           </Button>
           <Button
-            variant={mode === "line" ? "default" : "outline"}
+            variant={mode === "line" ? "default" : "ghost"}
             size="sm"
             onClick={() => setMode("line")}
           >
@@ -133,13 +138,13 @@ export function ChartContainer({ candles, lineData, isLoading }: ChartContainerP
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="h-[360px]">
+      <CardContent className="flex-1 px-4 pb-4 pt-0">
         {isLoading ? (
-          <div className="flex h-full items-center justify-center text-muted">
+          <div className="flex h-[360px] items-center justify-center text-muted">
             Loading chart data...
           </div>
         ) : (
-          <div ref={chartContainerRef} className="h-full w-full" />
+          <div ref={chartContainerRef} className="h-[360px] w-full" />
         )}
       </CardContent>
     </Card>

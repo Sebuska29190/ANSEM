@@ -2,7 +2,7 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="w-full border-t border-white/5 bg-background/80 py-6 text-center">
+    <footer className="mt-12 w-full border-t border-white/[0.06] bg-[#030305]/80 py-8 text-center">
       <p className="text-sm text-muted">
         © {currentYear} ANSEM.AI — Solana Token Terminal. Not financial advice.
       </p>

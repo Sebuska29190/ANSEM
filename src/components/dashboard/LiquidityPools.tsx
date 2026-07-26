@@ -16,8 +16,8 @@ export function LiquidityPools({ pairs, isLoading }: LiquidityPoolsProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Droplets className="h-5 w-5 text-ansem-accent" />
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Droplets className="h-4 w-4 text-ansem-accent" />
           Liquidity Pools
         </CardTitle>
       </CardHeader>
@@ -29,15 +29,15 @@ export function LiquidityPools({ pairs, isLoading }: LiquidityPoolsProps) {
             ))}
           </div>
         ) : pairs.length === 0 ? (
-          <div className="flex h-40 items-center justify-center rounded-xl border border-dashed border-white/10 text-muted text-sm">
+          <div className="flex h-40 items-center justify-center rounded-xl border border-dashed border-white/[0.06] text-muted text-sm">
             No liquidity pool data available.
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {pairs.slice(0, 5).map((pair) => (
               <div
                 key={pair.pairAddress}
-                className="flex items-center justify-between rounded-xl border border-white/5 bg-white/5 p-4 transition-colors hover:border-ansem-accent/30"
+                className="flex items-center justify-between rounded-xl border border-white/[0.04] bg-white/[0.03] p-4 transition-colors hover:border-ansem-accent/30"
               >
                 <div>
                   <div className="flex items-center gap-2">

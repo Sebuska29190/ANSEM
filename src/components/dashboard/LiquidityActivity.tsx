@@ -16,17 +16,17 @@ export function LiquidityActivity({ events, isLoading }: LiquidityActivityProps)
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Liquidity Activity</CardTitle>
+        <CardTitle className="text-base">Liquidity Activity</CardTitle>
       </CardHeader>
       <CardContent>
         {isLoading ? (
           <div className="space-y-2">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-10 animate-pulse rounded bg-white/5" />
+              <div key={i} className="h-10 animate-pulse rounded bg-white/[0.05]" />
             ))}
           </div>
         ) : events.length === 0 ? (
-          <div className="flex h-40 items-center justify-center rounded-xl border border-dashed border-white/10 text-muted text-sm">
+          <div className="flex h-40 items-center justify-center rounded-xl border border-dashed border-white/[0.06] text-muted text-sm">
             No liquidity activity available.
           </div>
         ) : (
@@ -39,7 +39,7 @@ export function LiquidityActivity({ events, isLoading }: LiquidityActivityProps)
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 10 }}
-                    className="flex items-center justify-between rounded-xl border border-white/5 bg-white/5 p-3"
+                    className="flex items-center justify-between rounded-xl border border-white/[0.04] bg-white/[0.03] p-3"
                   >
                     <div className="flex items-center gap-3">
                       <Badge

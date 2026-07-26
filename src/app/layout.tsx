@@ -18,6 +18,7 @@ export const metadata: Metadata = {
   title: "ANSEM.AI — Solana Token Terminal",
   description:
     "Live ANSEM token dashboard with real-time price, charts, swaps, liquidity and AI-generated news on Solana.",
+  metadataBase: new URL("https://ansemlive.netlify.app"),
   openGraph: {
     title: "ANSEM.AI — Solana Token Terminal",
     description: "Live ANSEM token dashboard with real-time data and AI news.",
@@ -35,11 +36,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pl">
+    <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-ansem min-h-screen`}
       >
-        <div className="bg-overlay min-h-screen">
+        <div className="bg-overlay noise-overlay min-h-screen">
           <Providers>{children}</Providers>
         </div>
       </body>

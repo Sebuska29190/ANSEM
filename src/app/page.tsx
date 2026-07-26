@@ -33,59 +33,59 @@ export default function DashboardPage() {
     <div className="min-h-screen text-foreground">
       <Header />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="space-y-6">
-          <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <div className="lg:col-span-1">
-              <PriceTicker
-                metrics={tokenData?.metrics}
-                isLoading={isTokenLoading}
-              />
-            </div>
-            <div className="lg:col-span-2">
-              <MarketStats
-                metrics={tokenData?.metrics}
-                isLoading={isTokenLoading}
-              />
-            </div>
-          </section>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-12">
+          {/* Hero metrics */}
+          <div className="md:col-span-4">
+            <PriceTicker
+              metrics={tokenData?.metrics}
+              isLoading={isTokenLoading}
+            />
+          </div>
+          <div className="md:col-span-8">
+            <MarketStats
+              metrics={tokenData?.metrics}
+              isLoading={isTokenLoading}
+            />
+          </div>
 
-          <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <div className="lg:col-span-2">
-              <ChartContainer
-                candles={chartData.candles}
-                lineData={chartData.line}
-                isLoading={isTokenLoading}
-              />
-            </div>
-            <div className="lg:col-span-1">
-              <AINewsFeed news={news} isLoading={isNewsLoading} />
-            </div>
-          </section>
+          {/* Chart */}
+          <div className="md:col-span-8">
+            <ChartContainer
+              candles={chartData.candles}
+              lineData={chartData.line}
+              isLoading={isTokenLoading}
+            />
+          </div>
 
-          <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <div className="lg:col-span-2">
-              <SwapTable swaps={swaps} isLoading={isSwapsLoading} />
-            </div>
-            <div className="lg:col-span-1 space-y-6">
-              <LiquidityPools
-                pairs={tokenData?.pairs ?? []}
-                isLoading={isTokenLoading}
-              />
-              <LiquidityActivity
-                events={liquidity}
-                isLoading={isLiquidityLoading}
-              />
-            </div>
-          </section>
+          {/* AI News */}
+          <div className="md:col-span-4">
+            <AINewsFeed news={news} isLoading={isNewsLoading} />
+          </div>
 
-          <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <div className="lg:col-span-2">
-              <TokenInfo />
-            </div>
-            <div className="lg:col-span-1">
-              <SocialLinks />
-            </div>
-          </section>
+          {/* Swaps feed */}
+          <div className="md:col-span-8">
+            <SwapTable swaps={swaps} isLoading={isSwapsLoading} />
+          </div>
+
+          {/* Right column */}
+          <div className="md:col-span-4 space-y-4">
+            <LiquidityPools
+              pairs={tokenData?.pairs ?? []}
+              isLoading={isTokenLoading}
+            />
+            <LiquidityActivity
+              events={liquidity}
+              isLoading={isLiquidityLoading}
+            />
+          </div>
+
+          {/* Token info & social */}
+          <div className="md:col-span-8">
+            <TokenInfo />
+          </div>
+          <div className="md:col-span-4">
+            <SocialLinks />
+          </div>
         </div>
       </main>
       <Footer />
