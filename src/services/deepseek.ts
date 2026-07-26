@@ -1,4 +1,4 @@
-import type { AINewsItem } from "@/types";
+import type { AINewsItem } from "../types";
 
 const DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions";
 const MODEL = "deepseek-chat";

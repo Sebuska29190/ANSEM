@@ -2,8 +2,8 @@ import {
   DEXSCREENER_TOKEN_API,
   DEXSCREENER_PAIRS_API,
   ANSEM_ADDRESS,
-} from "@/lib/constants";
-import type { TokenPair, TokenMetrics } from "@/types";
+} from "../lib/constants";
+import type { TokenPair, TokenMetrics } from "../types";
 
 export interface DexScreenerTokenData {
   pairs: TokenPair[];

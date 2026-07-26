@@ -12,6 +12,7 @@ Live dashboard for the **ANSEM** token on Solana: real-time price, market stats,
 - **Lightweight Charts**
 - **TanStack Query**
 - **DeepSeek API** for AI news
+- **Netlify** — hosting, functions, and scheduled jobs
 
 ## Data Sources
 
@@ -50,24 +51,40 @@ npm run dev
 
 ## Deployment
 
-This project is optimized for **Vercel**.
+This project is optimized for **Netlify**.
 
 1. Push to GitHub.
-2. Import the repository in Vercel.
-3. Set the environment variables.
+2. Import the repository in Netlify.
+3. Set the environment variables in Netlify Site settings.
 4. Deploy.
 
-Cron jobs are defined in `vercel.json`:
+### Scheduled Functions
 
-- `/api/cron/generate-news` — every 30 minutes
+Netlify Scheduled Functions are defined in:
 
-## Note on AI News
+- `netlify/functions/generate-news.ts` — runs every 30 minutes and stores the latest AI news in Netlify Blobs.
 
-The current MVP generates AI news on each request to `/api/news`. For production, it is recommended to add a persistence layer (e.g., Vercel KV or Upstash Redis) so the cron job can store news and the frontend can read cached items without calling DeepSeek on every page load.
+### AI News Persistence
+
+Generated news are stored in Netlify Blobs. The `/api/news` endpoint reads the latest item from blob storage and falls back to on-demand generation if nothing has been cached yet.
+
+### Local Development with Netlify Functions
+
+To test scheduled functions or Netlify Blobs locally, use the Netlify CLI:
+
+```bash
+npm install -g netlify-cli
+netlify link
+netlify dev
+```
+
+Without `netlify dev`, Netlify Blobs may not be available locally.
 
 ## Project Structure
 
 ```
+netlify/
+  functions/        # Netlify Functions (scheduled jobs)
 src/
   app/              # Next.js App Router routes and API
   components/       # UI and dashboard components
