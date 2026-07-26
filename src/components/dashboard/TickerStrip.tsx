@@ -7,12 +7,8 @@ import { formatBigUSD } from "@/lib/utils";
 
 /**
  * TickerStrip — slim horizontal data tape below the hero.
- * Repeats the same set of "ticker chips" twice in a Marquee
- * so we get a continuous scroll without breaking the order.
- *
- * We intentionally hide the strip until real metrics arrive so
- * the placeholder SOL/BTC/ETH anchors never sit next to a live
- * $ANSEM chip (which would look misleading).
+ * Reserves a 50 px slot before live data arrives so the rest
+ * of the page doesn't shift when metrics first resolve.
  */
 
 function SparkBar({ values, up }: { values: number[]; up: boolean }) {
@@ -45,7 +41,24 @@ export function TickerStrip() {
   const m = data?.metrics;
   const hasReal = !!m && m.priceUsd > 0;
 
-  if (!hasReal) return null;
+  // Skeleton placeholder so the slot has a stable height before live data lands
+  if (!hasReal) {
+    return (
+      <div
+        className="relative border-y border-white/[0.06] bg-obsidian/80 backdrop-blur-md"
+        aria-hidden
+      >
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-ember/60 to-transparent" />
+        <div className="flex h-[50px] items-center justify-center gap-2 px-4 text-[10px] font-bold uppercase tracking-[0.2em] text-terminal-dim">
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-ember opacity-50" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-ember" />
+          </span>
+          Awaiting first live ticks…
+        </div>
+      </div>
+    );
+  }
 
   const chips: Chip[] = [
     {
@@ -95,7 +108,7 @@ export function TickerStrip() {
   return (
     <div className="relative border-y border-white/[0.06] bg-obsidian/80 backdrop-blur-md">
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-ember/60 to-transparent" />
-      <div className="py-3">
+      <div className="min-h-[52px] py-3">
         <Marquee speedSeconds={45}>
           {chips.map((c, i) => (
             <div

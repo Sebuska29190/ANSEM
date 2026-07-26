@@ -8,7 +8,7 @@ import { LiquidityPools } from "@/components/dashboard/LiquidityPools";
 import { LiquidityActivity } from "@/components/dashboard/LiquidityActivity";
 import { TokenInfo } from "@/components/dashboard/TokenInfo";
 import { SocialLinks } from "@/components/dashboard/SocialLinks";
-import { Footer } from "@/components/dashboard/Footer";
+import Footer from "@/components/dashboard/Footer";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import { Eyebrow } from "@/components/ui/GlassPanel";
 
@@ -24,14 +24,10 @@ import { Eyebrow } from "@/components/ui/GlassPanel";
  *   03 Liquidity       — LiquidityPools + LiquidityActivity (two-up)
  *   04 Token & Links   — TokenInfo + SocialLinks (two-up)
  *   ── Footer
- *
- * The page itself is a Server Component — every interactive block
- * is "\"use client\"" itself.
  */
 export default function Page() {
   return (
     <main className="relative min-h-screen overflow-hidden">
-      {/* Global ember halo behind the entire page */}
       <div
         aria-hidden
         className="pointer-events-none fixed left-1/2 top-0 -z-10 h-[640px] w-[1100px] -translate-x-1/2 blur-3xl"
@@ -44,7 +40,6 @@ export default function Page() {
       <Hero />
       <TickerStrip />
 
-      {/* 01 — Live chart + stats */}
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <ScrollReveal>
           <Eyebrow index="01" label="Market" />
@@ -59,7 +54,6 @@ export default function Page() {
         </ScrollReveal>
       </section>
 
-      {/* 02 — On-chain swaps + AI news */}
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <ScrollReveal>
           <Eyebrow index="02" label="On-Chain Intelligence" />
@@ -74,7 +68,6 @@ export default function Page() {
         </ScrollReveal>
       </section>
 
-      {/* 03 — Liquidity pools + activity */}
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <ScrollReveal>
           <Eyebrow index="03" label="Liquidity" />
@@ -89,7 +82,6 @@ export default function Page() {
         </ScrollReveal>
       </section>
 
-      {/* 04 — Token info + Community */}
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <ScrollReveal>
           <Eyebrow index="04" label="Token & Community" />

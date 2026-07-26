@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Copy, Check, ArrowUpRight, Zap, Activity } from "lucide-react";
+import { Copy, Check, ArrowUpRight, Zap, Activity, TrendingUp, TrendingDown } from "lucide-react";
 import { useTokenData } from "@/hooks/useTokenData";
 import { ANSEM_ADDRESS } from "@/lib/constants";
 import { formatBigUSD } from "@/lib/utils";
@@ -12,15 +12,7 @@ import { MoneyTicker, NumberTicker } from "@/components/ui/NumberTicker";
 /**
  * Hero
  * ------------------------------------------------------
- * Full-bleed black/orange terminal hero. Layout:
- *   ┌──────── TERMINAL LIVE indicator ────────┐
- *   │  $ANSEM  ╱  THE  BLACK  BULL             │
- *   │  [monumental price ticker]                │
- *   │  MC · Vol · Liq · 24h Change (glass row)  │
- *   │  [BUY $ANSEM]  [COPY CA]                  │
- *   └──────────────────── BullEmblem (right) ───-┘
- * The bull emblem sits to the right (or behind on mobile)
- * with two animated orbital rings + a soft ember halo.
+ * Full-bleed black/orange terminal hero.
  */
 
 const LINKS = {
@@ -38,11 +30,20 @@ export function Hero() {
   const m = data?.metrics;
   const pricePositive = (m?.priceChange24h ?? 0) >= 0;
   const [copied, setCopied] = useState(false);
+  const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Cancel pending copy-feedback timer on unmount (no setState after unmount)
+  useEffect(() => {
+    return () => {
+      if (copyTimer.current) clearTimeout(copyTimer.current);
+    };
+  }, []);
 
   const copyCA = useCallback(() => {
     navigator.clipboard.writeText(ANSEM_ADDRESS);
     setCopied(true);
-    setTimeout(() => setCopied(false), 1800);
+    if (copyTimer.current) clearTimeout(copyTimer.current);
+    copyTimer.current = setTimeout(() => setCopied(false), 1800);
   }, []);
 
   const buy = m?.buys24h ?? 0;
@@ -120,13 +121,15 @@ export function Hero() {
             </span>
           </motion.div>
 
-          {/* Hero price block — CLS-safe skeleton reserved for the same width */}
+          {/* Hero price block — CLS-safe via matching min-width */}
           <div className="mt-10 flex items-end gap-6">
-            {isLoading || !m ? (
-              <div className="h-20 w-72 animate-pulse rounded-lg bg-white/5" />
-            ) : (
-              <MoneyTicker value={m.priceUsd} size="display" />
-            )}
+            <div className="min-w-[18rem] md:min-w-[24rem] max-w-full">
+              {isLoading || !m ? (
+                <div className="h-20 w-72 animate-pulse rounded-lg bg-white/5" />
+              ) : (
+                <MoneyTicker value={m.priceUsd} size="display" />
+              )}
+            </div>
             {!isLoading && m && (
               <div className="pb-2">
                 <span
@@ -186,9 +189,13 @@ export function Hero() {
                 className="h-full rounded-full bg-gradient-to-r from-bull-up via-ember to-bull-down"
               />
             </div>
-            <div className="mt-1 flex justify-between text-[10px] font-mono text-terminal-dim">
-              <span>🟢 {buy} buys</span>
-              <span>{sell} sells 🔴</span>
+            <div className="mt-1 flex items-center justify-between text-[10px] font-mono text-terminal-dim">
+              <span className="inline-flex items-center gap-1">
+                <TrendingUp className="h-3 w-3 text-bull-up" /> {buy} buys
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <TrendingDown className="h-3 w-3 text-bull-down" /> {sell} sells
+              </span>
             </div>
           </div>
 
