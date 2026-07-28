@@ -157,7 +157,7 @@ export function SwapTable() {
         </table>
       </div>
       <div className="border-t border-line px-5 py-2 text-[10px] text-dim">
-        Real on-chain transactions via Solscan. Click a wallet or age to inspect on Solscan.
+        Real on-chain transactions via Solana Tracker. Click a wallet or age to inspect on Solscan.
       </div>
     </Panel>
   );

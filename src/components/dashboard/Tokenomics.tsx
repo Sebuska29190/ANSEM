@@ -175,7 +175,7 @@ export function Tokenomics() {
           </table>
         </div>
         <div className="border-t border-line px-5 py-2 text-[10px] text-dim">
-          Real holder distribution via Solscan Pro API.
+          Real holder distribution via Solana Tracker.
         </div>
       </Panel>
     </div>

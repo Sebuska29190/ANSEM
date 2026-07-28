@@ -79,7 +79,7 @@ export async function fetchHolders(
     owner: raw.wallet,
     amount: raw.amount,
     amountStr: raw.amount.toLocaleString("en-US", { maximumFractionDigits: 0 }),
-    decimals: 6,
+    decimals: 0, // amounts already human-readable from Solana Tracker
     rank: i + 1,
     value: raw.value?.usd ?? 0,
     percentage: raw.percentage ?? 0,
