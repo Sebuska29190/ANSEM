@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Unbounded, JetBrains_Mono, IBM_Plex_Sans } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { Providers } from "@/components/Providers";
 import "./globals.css";
 
@@ -81,6 +82,7 @@ export default function RootLayout({
     >
       <body className="min-h-screen bg-bg text-text antialiased noise-overlay">
         <Providers>{children}</Providers>
+        <Analytics />
       </body>
     </html>
   );
