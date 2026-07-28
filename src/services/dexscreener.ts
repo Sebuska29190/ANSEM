@@ -263,20 +263,21 @@ export function deriveLiquidityEvents(
   const volume24h = pair.volume?.h24 ?? 0;
   const events: LiquidityEvent[] = [];
 
-  // Sane per-event sizing: liquidity events on a single pool are
-  // typically 0.05% – 0.5% of daily volume, not volume/24 (which
-  // inflated them 100x). Cap and floor keep things readable.
-  const pctOfVolume = 0.0005 + random() * 0.0045; // 0.05% – 0.5%
-  const baseline =
-    volume24h > 0
-      ? Math.max(20, volume24h * pctOfVolume)
-      : Math.max(20, (liquidityUsd || 0) * 0.005);
-  const variance = 0.6 + random() * 0.8; // 0.6 – 1.4
-
   const count = liquidityUsd > 0 ? 8 : 3;
-  const solPrice = sanitizeSolPrice(solPriceUsd);
+  const solPrice =
+    Number.isFinite(solPriceUsd) && solPriceUsd > 1 && solPriceUsd < 5000
+      ? solPriceUsd
+      : 150;
 
   for (let i = 0; i < count; i++) {
+    // Per-event sizing: 0.05% – 0.5% of daily volume, varied per row
+    const pctOfVolume = 0.0005 + random() * 0.0045;
+    const baseline =
+      volume24h > 0
+        ? Math.max(20, volume24h * pctOfVolume)
+        : Math.max(20, (liquidityUsd || 0) * 0.005);
+    const variance = 0.6 + random() * 0.8; // 0.6 – 1.4
+
     const type: "added" | "removed" = random() > 0.35 ? "added" : "removed";
     const usdValue = baseline * variance;
     const priceUsd = Number.parseFloat(pair.priceUsd) || 1;

@@ -2,7 +2,7 @@
 
 import { useCallback, useState, useEffect, useRef } from "react";
 import { Globe, AtSign, Copy, Check } from "lucide-react";
-import { ANSEM_ADDRESS } from "@/lib/constants";
+import { ANSEM_ADDRESS, ANSEM_PAIR_ADDRESS } from "@/lib/constants";
 
 /**
  * Site footer. Mirrors the design system — black background,
@@ -83,7 +83,7 @@ export default function Footer() {
               Analytics
             </p>
             <ul className="space-y-2 text-sm text-white">
-              <li><a className="transition-colors hover:text-gold" href={`https://dexscreener.com/solana/${ANSEM_ADDRESS}`} target="_blank" rel="noopener noreferrer">DexScreener</a></li>
+              <li><a className="transition-colors hover:text-gold" href={`https://dexscreener.com/solana/${ANSEM_PAIR_ADDRESS}`} target="_blank" rel="noopener noreferrer">DexScreener</a></li>
               <li><a className="transition-colors hover:text-gold" href={`https://birdeye.so/token/${ANSEM_ADDRESS}?chain=solana`} target="_blank" rel="noopener noreferrer">Birdeye</a></li>
               <li><a className="transition-colors hover:text-gold" href={`https://solscan.io/token/${ANSEM_ADDRESS}`} target="_blank" rel="noopener noreferrer">Solscan</a></li>
             </ul>
@@ -97,7 +97,7 @@ export default function Footer() {
           </span>
           <span className="flex items-center gap-3">
             <a
-              href="https://x.com/blknoiz06"
+              href="https://x.com/blackbullsol"
               target="_blank"
               rel="noopener noreferrer"
               className="transition-colors hover:text-white"

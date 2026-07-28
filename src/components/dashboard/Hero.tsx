@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Copy, Check, ArrowUpRight, Zap, Activity, TrendingUp, TrendingDown } from "lucide-react";
 import { useTokenData } from "@/hooks/useTokenData";
-import { ANSEM_ADDRESS } from "@/lib/constants";
+import { ANSEM_ADDRESS, ANSEM_PAIR_ADDRESS } from "@/lib/constants";
 import { formatBigUSD } from "@/lib/utils";
 import { BullEmblem } from "./BullEmblem";
 import { MoneyTicker, NumberTicker } from "@/components/ui/NumberTicker";
@@ -16,13 +16,13 @@ import { MoneyTicker, NumberTicker } from "@/components/ui/NumberTicker";
  */
 
 const LINKS = {
-  dexscreener: `https://dexscreener.com/solana/${ANSEM_ADDRESS}`,
+  dexscreener: `https://dexscreener.com/solana/${ANSEM_PAIR_ADDRESS}`,
   birdeye:     `https://birdeye.so/token/${ANSEM_ADDRESS}?chain=solana`,
   solscan:     `https://solscan.io/token/${ANSEM_ADDRESS}`,
   pump:        `https://pump.fun/${ANSEM_ADDRESS}`,
   raydium:     `https://raydium.io/swap/?inputMint=sol&outputMint=${ANSEM_ADDRESS}`,
   jupiter:     `https://jup.ag/swap/SOL-${ANSEM_ADDRESS}`,
-  x:           "https://x.com/blknoiz06",
+  x:           "https://x.com/blackbullsol",
 };
 
 export function Hero() {

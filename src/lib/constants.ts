@@ -2,6 +2,11 @@ export const ANSEM_ADDRESS =
   process.env.NEXT_PUBLIC_ANSEM_ADDRESS ??
   "9cRCn9rGT8V2imeM2BaKs13yhMEais3ruM3rPvTGpump";
 
+/** DexScreener pair address (ANSEM/SOL on PumpSwap) — used for chart embed + links. */
+export const ANSEM_PAIR_ADDRESS =
+  process.env.NEXT_PUBLIC_ANSEM_PAIR_ADDRESS ??
+  "FnzKY6x7entQ1eR3D225dQyT7ybfka4PskBMQhb8L3CC";
+
 export const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://ansem.vercel.app";
 

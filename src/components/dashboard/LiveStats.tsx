@@ -1,36 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { DollarSign, BarChart3, Layers, Droplets, Users, Flame } from "lucide-react";
+import { DollarSign, BarChart3, Layers, Droplets, Users, Flame, ExternalLink } from "lucide-react";
 import { useTokenData } from "@/hooks/useTokenData";
 import { NumberTicker } from "@/components/ui/NumberTicker";
 import { formatBigUSD } from "@/lib/utils";
+import { ANSEM_ADDRESS } from "@/lib/constants";
 
 /**
  * LiveStats — compact rolled-up stats for the side rail next to the chart.
- * Holders are "fake-live" — the dashboard pretends holders boot +/- n over
- * time so the right rail never looks dead before Helius / Birdeye is wired.
+ * Holders link out to Solscan (DexScreener API doesn't expose holder count).
  */
-
-// Deterministic ±jitter so the change feels real, not random noise.
-function nextHolders(prev: number): number {
-  // mean-reverting random walk bounded to [2800, 3500]
-  const drift = (Math.round(Math.sin(prev) * 3) + Math.round(Math.cos(prev / 2) * 2));
-  const noise = Math.floor(Math.random() * 5) - 2;
-  const target = prev + drift + noise;
-  return Math.max(2_800, Math.min(3_500, target));
-}
 
 export function LiveStats() {
   const { data, isLoading } = useTokenData();
   const m = data?.metrics;
-
-  // Fake-live holder count incremented every ~4 s
-  const [holders, setHolders] = useState(2_847);
-  useEffect(() => {
-    const id = setInterval(() => setHolders((h) => nextHolders(h)), 4_000);
-    return () => clearInterval(id);
-  }, []);
 
   const items = [
     {
@@ -98,11 +81,15 @@ export function LiveStats() {
       label: "Holders",
       icon: Users,
       el: (
-        <NumberTicker
-          value={holders}
-          format={(v) => v.toLocaleString("en-US")}
-          size="lg"
-        />
+        <a
+          href={`https://solscan.io/token/${ANSEM_ADDRESS}#holders`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group inline-flex items-center gap-1.5 font-mono text-lg font-bold text-white transition-colors hover:text-ember"
+        >
+          View on Solscan
+          <ExternalLink className="h-3.5 w-3.5 text-terminal-dim transition-colors group-hover:text-ember" />
+        </a>
       ),
     },
   ];

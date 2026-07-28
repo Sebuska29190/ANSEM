@@ -34,7 +34,7 @@ function SparkBar({ values, up }: { values: number[]; up: boolean }) {
   );
 }
 
-type Chip = { label: string; value: string; delta: number; spark: number[] };
+type Chip = { label: string; value: string; delta: number | null; spark: number[] };
 
 export function TickerStrip() {
   const { data } = useTokenData();
@@ -82,25 +82,25 @@ export function TickerStrip() {
     {
       label: "24H VOL",
       value: formatBigUSD(m!.volume24h ?? 0),
-      delta: m!.priceChange24h ?? 0,
+      delta: null,
       spark: [3, 1, 4, 2, 5, 3, 4],
     },
     {
       label: "LIQUIDITY",
       value: formatBigUSD(m!.liquidityUsd ?? 0),
-      delta: 0,
+      delta: null,
       spark: [4, 4, 4, 5, 4, 4, 5],
     },
     {
       label: "BUYS · 24H",
       value: `${m!.buys24h}`,
-      delta: 0,
+      delta: null,
       spark: [2, 3, 4, 3, 5, 6, 5],
     },
     {
       label: "SELLS · 24H",
       value: `${m!.sells24h}`,
-      delta: 0,
+      delta: null,
       spark: [3, 2, 3, 4, 3, 5, 3],
     },
   ];
@@ -119,23 +119,23 @@ export function TickerStrip() {
                 {c.label}
               </span>
               <span className="text-white">{c.value}</span>
-              <SparkBar values={c.spark} up={c.delta >= 0} />
-              <span
-                className={
-                  c.delta >= 0
-                    ? "text-bull-up"
-                    : c.delta < 0
-                    ? "text-bull-down"
-                    : "text-terminal-dim"
-                }
-              >
-                {c.delta >= 0 ? (
-                  <TrendingUp className="inline h-3 w-3" />
-                ) : (
-                  <TrendingDown className="inline h-3 w-3" />
-                )}{" "}
-                {c.delta.toFixed(2)}%
-              </span>
+              {c.delta !== null && (
+                <>
+                  <SparkBar values={c.spark} up={c.delta >= 0} />
+                  <span
+                    className={
+                      c.delta >= 0 ? "text-bull-up" : "text-bull-down"
+                    }
+                  >
+                    {c.delta >= 0 ? (
+                      <TrendingUp className="inline h-3 w-3" />
+                    ) : (
+                      <TrendingDown className="inline h-3 w-3" />
+                    )}{" "}
+                    {c.delta.toFixed(2)}%
+                  </span>
+                </>
+              )}
               {i < chips.length - 1 && (
                 <span aria-hidden className="mx-4 h-3 w-px bg-white/10" />
               )}

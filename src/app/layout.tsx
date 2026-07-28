@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     "Raydium",
     "DexScreener",
   ],
-  authors: [{ name: "blknoiz06" }],
+  authors: [{ name: "blackbullsol" }],
   openGraph: {
     title: "ANSEM — The Black Bull Terminal",
     description:

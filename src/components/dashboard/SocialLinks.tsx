@@ -3,7 +3,7 @@
 import {
   Globe, AtSign, BookOpen, Activity, Search, TrendingUp,
 } from "lucide-react";
-import { ANSEM_ADDRESS } from "@/lib/constants";
+import { ANSEM_ADDRESS, ANSEM_PAIR_ADDRESS } from "@/lib/constants";
 
 /**
  * SocialLinks — premium social/external-link grid.
@@ -20,15 +20,22 @@ type LinkItem = {
 const LINKS: LinkItem[] = [
   {
     label: "X / Twitter",
-    desc: "@blknoiz06",
-    href: "https://x.com/blknoiz06",
+    desc: "@blackbullsol",
+    href: "https://x.com/blackbullsol",
     icon: AtSign,
     brand: "hover:text-white hover:border-white/40",
   },
   {
+    label: "Website",
+    desc: "blackbullsol.com",
+    href: "https://www.blackbullsol.com/",
+    icon: Globe,
+    brand: "hover:text-ember hover:border-ember/40",
+  },
+  {
     label: "DexScreener",
     desc: "Live pair analytics",
-    href: `https://dexscreener.com/solana/${ANSEM_ADDRESS}`,
+    href: `https://dexscreener.com/solana/${ANSEM_PAIR_ADDRESS}`,
     icon: Activity,
     brand: "hover:text-bull-up hover:border-bull-up/40",
   },
