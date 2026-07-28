@@ -1,48 +1,73 @@
 import { NextResponse } from "next/server";
-import { getStore } from "@netlify/blobs";
 import { fetchTokenData } from "@/services/dexscreener";
 import { generateAINews } from "@/services/deepseek";
-import { parseJsonSafe } from "@/lib/blobs";
+import { addNewsItem, getNewsHistory } from "@/lib/news-store";
 import type { AINewsItem } from "@/types";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
+const STALE_MS = 25 * 60 * 1000;
+const MAX_VISIBLE = 10;
+
+/**
+ * GET /api/news
+ * ------------------------------------------------------------------
+ * Returns the rolling news history (newest first, capped).
+ *
+ * Behaviour:
+ *  - If the store is empty → generate one item right now so the
+ *    dashboard never shows the empty state on first load.
+ *  - If the top item is older than 25 min → top up with a new one.
+ *  - Always returns an array. Always in English (deepseek.ts
+ *    enforces; deterministic English fallback when API is down).
+ */
 export async function GET() {
   try {
-    const store = getStore("ai-news");
-    const cached = await store.get("latest");
-    let news = parseJsonSafe<AINewsItem>(cached);
+    let items = await getNewsHistory();
 
-    if (!news) {
+    const top = items[0];
+    const stale = !top || Date.now() - top.createdAt > STALE_MS;
+
+    if (stale) {
       const { metrics } = await fetchTokenData();
 
-      if (!metrics) {
-        return NextResponse.json(
-          { error: "Token metrics not available" },
-          { status: 503 }
-        );
-      }
-
-      news = await generateAINews({
-        priceUsd: metrics.priceUsd,
-        priceChange24h: metrics.priceChange24h,
-        volume24h: metrics.volume24h,
-        liquidityUsd: metrics.liquidityUsd,
+      // Even if metrics are unavailable we still want *something*
+      // English to display, so generateAINews handles zeros fine.
+      const fresh = await generateAINews({
+        priceUsd: metrics?.priceUsd ?? 0,
+        priceChange24h: metrics?.priceChange24h ?? null,
+        volume24h: metrics?.volume24h ?? null,
+        liquidityUsd: metrics?.liquidityUsd ?? null,
       });
 
-      await store.setJSON("latest", news);
+      items = await addNewsItem(fresh);
     }
 
-    return NextResponse.json([news], {
+    const visible = items.slice(0, MAX_VISIBLE);
+    return NextResponse.json(visible, {
       headers: {
         "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120",
       },
     });
   } catch (error) {
     console.error("AI News API error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch AI news" },
-      { status: 500 }
-    );
+    // Last-resort: synthesise one English item on the fly so the
+    // UI never has an empty state.
+    try {
+      const fallback = await generateAINews({
+        priceUsd: 0,
+        priceChange24h: null,
+        volume24h: null,
+        liquidityUsd: null,
+      });
+      const items = await addNewsItem(fallback);
+      return NextResponse.json(items.slice(0, MAX_VISIBLE) as AINewsItem[]);
+    } catch {
+      return NextResponse.json(
+        { error: "Failed to fetch AI news" },
+        { status: 500 }
+      );
+    }
   }
 }

@@ -93,17 +93,85 @@ function createSeededRandom(seed: string): () => number {
   };
 }
 
-function solPriceFromPair(pair: TokenPair): number {
+/**
+ * SOL/USD price resolution.
+ * ----------------------------------------------------------------------
+ * Order of preference:
+ *   1. Implied from the pair itself (priceUsd / priceNative) – this is
+ *      the actual price the on-chain pool is trading at right now.
+ *   2. CoinGecko public price (cached 5 min via Next data cache).
+ *   3. Hardcoded fallback (~$150) – only if both above fail offline.
+ *
+ * priceNative in DexScreener = "how much SOL equals 1 base token".
+ * So SOL/USD = priceUsd / priceNative. The previous implementation
+ * multiplied them, which made the divisor ~1e-9 and produced the
+ * absurd "hundreds-of-millions-SOL" rows in LiquidityActivity.
+ */
+
+interface SolPriceCache {
+  price: number;
+  exp: number;
+}
+
+const SOL_CACHE_TTL_MS = 5 * 60 * 1000;
+let solCache: SolPriceCache = { price: 0, exp: 0 };
+
+function chainImpliedSolPrice(pair: TokenPair): number | null {
   const priceUsd = Number.parseFloat(pair.priceUsd) || 0;
   const priceNative = Number.parseFloat(pair.priceNative) || 0;
   if (priceUsd > 0 && priceNative > 0) {
-    return priceUsd * priceNative;
+    const implied = priceUsd / priceNative;
+    // Sanity: only accept if the implied SOL price is in a plausible band.
+    if (implied > 1 && implied < 5000) return Number(implied.toFixed(4));
   }
-  return 150;
+  return null;
+}
+
+async function fetchCoinGeckoSolUsd(): Promise<number | null> {
+  // Honour the in-process cache so we never spam CoinGecko.
+  if (Date.now() < solCache.exp && solCache.price > 0) return solCache.price;
+
+  try {
+    const res = await fetch(
+      "https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd",
+      { next: { revalidate: 300 } }
+    );
+    if (!res.ok) return null;
+    const json = (await res.json()) as { solana?: { usd?: number } };
+    const p = json?.solana?.usd;
+    if (typeof p === "number" && p > 0 && p < 5000) {
+      solCache = { price: Number(p.toFixed(4)), exp: Date.now() + SOL_CACHE_TTL_MS };
+      return solCache.price;
+    }
+  } catch {
+    /* network error – keep going */
+  }
+  return null;
+}
+
+export async function resolveSolUsdPrice(pair?: TokenPair): Promise<number> {
+  if (pair) {
+    const chain = chainImpliedSolPrice(pair);
+    if (chain !== null) return chain;
+  }
+  const cg = await fetchCoinGeckoSolUsd();
+  if (cg !== null) return cg;
+  // Last-resort fallback. Conservative August-2026 ballpark.
+  return solCache.price > 0 ? solCache.price : 150;
 }
 
 const BASE58_ALPHABET =
   "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+
+/**
+ * Defensive sanitiser for any externally-resolved SOL/USD price.
+ * Rejects NaN, Infinity, zero, negatives, and absurd values; falls
+ * back to a conservative hardcoded estimate so the SOL column in
+ * LiquidityActivity / Swaps can't ever look insane again.
+ */
+function sanitizeSolPrice(n: number): number {
+  return Number.isFinite(n) && n > 1 && n < 5000 ? n : 150;
+}
 
 function generateWallet(seed: string, index: number): string {
   const random = createSeededRandom(`${seed}-wallet-${index}`);
@@ -128,7 +196,10 @@ function generateTxHash(seed: string, index: number): string {
   return hash;
 }
 
-export function deriveSwapEvents(pair: TokenPair): SwapEvent[] {
+export function deriveSwapEvents(
+  pair: TokenPair,
+  solPriceUsd: number
+): SwapEvent[] {
   const seed = getSeed(pair.pairAddress);
   const random = createSeededRandom(seed);
   const h24 = pair.txns?.h24 ?? { buys: 0, sells: 0 };
@@ -138,8 +209,10 @@ export function deriveSwapEvents(pair: TokenPair): SwapEvent[] {
   const quoteSymbol = pair.quoteToken?.symbol ?? "SOL";
 
   const totalSwaps = Math.max(h24.buys + h24.sells, 20);
-  const averageUsd = volume24h / totalSwaps || 1000;
-  const solPrice = solPriceFromPair(pair);
+  const averageUsd = volume24h / totalSwaps || 100;
+  // Sanity-clamp the passed-in SOL price so a stale or bogus value
+  // never explodes the SOL column again.
+  const solPrice = sanitizeSolPrice(solPriceUsd);
 
   const events: SwapEvent[] = [];
   let index = 0;
@@ -180,24 +253,32 @@ export function deriveSwapEvents(pair: TokenPair): SwapEvent[] {
     .slice(0, 100);
 }
 
-export function deriveLiquidityEvents(pair: TokenPair): LiquidityEvent[] {
+export function deriveLiquidityEvents(
+  pair: TokenPair,
+  solPriceUsd: number
+): LiquidityEvent[] {
   const seed = getSeed(`${pair.pairAddress}-liquidity`);
   const random = createSeededRandom(seed);
   const liquidityUsd = pair.liquidity?.usd ?? 0;
   const volume24h = pair.volume?.h24 ?? 0;
   const events: LiquidityEvent[] = [];
 
-  // Scale representative liquidity events relative to daily volume rather
-  // than total liquidity, which avoids unrealistically large numbers.
-  const baseUsd = volume24h > 0 ? volume24h / 24 : liquidityUsd / 100 || 5000;
+  // Sane per-event sizing: liquidity events on a single pool are
+  // typically 0.05% – 0.5% of daily volume, not volume/24 (which
+  // inflated them 100x). Cap and floor keep things readable.
+  const pctOfVolume = 0.0005 + random() * 0.0045; // 0.05% – 0.5%
+  const baseline =
+    volume24h > 0
+      ? Math.max(20, volume24h * pctOfVolume)
+      : Math.max(20, (liquidityUsd || 0) * 0.005);
+  const variance = 0.6 + random() * 0.8; // 0.6 – 1.4
 
   const count = liquidityUsd > 0 ? 8 : 3;
+  const solPrice = sanitizeSolPrice(solPriceUsd);
 
   for (let i = 0; i < count; i++) {
     const type: "added" | "removed" = random() > 0.35 ? "added" : "removed";
-    const variance = 0.3 + random() * 1.4;
-    const usdValue = Math.max(baseUsd * variance, 50);
-    const solPrice = solPriceFromPair(pair);
+    const usdValue = baseline * variance;
     const priceUsd = Number.parseFloat(pair.priceUsd) || 1;
 
     events.push({

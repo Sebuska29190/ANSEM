@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { fetchTokenData, deriveSwapEvents } from "../../../services/dexscreener";
+import {
+  fetchTokenData,
+  deriveSwapEvents,
+  resolveSolUsdPrice,
+} from "../../../services/dexscreener";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +18,8 @@ export async function GET() {
       );
     }
 
-    const events = deriveSwapEvents(topPair);
+    const solPriceUsd = await resolveSolUsdPrice(topPair);
+    const events = deriveSwapEvents(topPair, solPriceUsd);
 
     return NextResponse.json(events, {
       headers: {

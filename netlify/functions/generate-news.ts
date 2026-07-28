@@ -1,14 +1,30 @@
 import { schedule } from "@netlify/functions";
-import { getStore } from "@netlify/blobs";
 import { fetchTokenData } from "../../src/services/dexscreener";
 import { generateAINews } from "../../src/services/deepseek";
-import { parseJsonSafe } from "../../src/lib/blobs";
-import type { AINewsItem } from "../../src/types";
+import { addNewsItem, getNewsHistory } from "../../src/lib/news-store";
 
+/**
+ * Scheduled background job — runs every 30 minutes.
+ *
+ * Reads the current history, skips if a fresh item (<25m) exists,
+ * otherwise pulls the latest metrics from DexScreener and appends
+ * a new English news item to the shared store.
+ *
+ * The store mirrors to Netlify Blobs so the /api/news endpoint can
+ * hydrate on cold starts.
+ */
 export const handler = schedule("*/30 * * * *", async () => {
   try {
-    const { metrics } = await fetchTokenData();
+    const existing = await getNewsHistory();
+    const top = existing[0];
+    if (top && Date.now() - top.createdAt < 25 * 60 * 1000) {
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ ok: true, skipped: true }),
+      };
+    }
 
+    const { metrics } = await fetchTokenData();
     if (!metrics) {
       return {
         statusCode: 503,
@@ -16,30 +32,18 @@ export const handler = schedule("*/30 * * * *", async () => {
       };
     }
 
-    const store = getStore("ai-news");
-    const cached = await store.get("latest");
-    const existing = parseJsonSafe<AINewsItem>(cached);
-
-    // Skip if we already generated news in the last 25 minutes
-    if (existing && Date.now() - existing.createdAt < 25 * 60 * 1000) {
-      return {
-        statusCode: 200,
-        body: JSON.stringify({ ok: true, skipped: true, news: existing }),
-      };
-    }
-
-    const news = await generateAINews({
+    const fresh = await generateAINews({
       priceUsd: metrics.priceUsd,
       priceChange24h: metrics.priceChange24h,
       volume24h: metrics.volume24h,
       liquidityUsd: metrics.liquidityUsd,
     });
 
-    await store.setJSON("latest", news);
+    await addNewsItem(fresh);
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ ok: true, news }),
+      body: JSON.stringify({ ok: true }),
     };
   } catch (error) {
     console.error("Scheduled function error:", error);

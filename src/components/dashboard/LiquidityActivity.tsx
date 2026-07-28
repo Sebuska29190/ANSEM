@@ -8,12 +8,33 @@ import { truncateWallet, timeAgo } from "@/lib/utils";
 /**
  * LiquidityActivity — recent on-chain pool adds/removes.
  * Companion panel to SwapTable.
+ *
+ * Numbers shown are derived (representative) events synthesised from
+ * 24h DexScreener aggregates, NOT individual on-chain transactions.
+ * The footer says so explicitly. SOL amounts use the real SOL/USD
+ * price (CoinGecko-cached) so the column never shows fake numbers.
  */
 
 function usd(n: number) {
   if (n >= 1e6) return `$${(n / 1e6).toFixed(2)}M`;
   if (n >= 1e3) return `$${(n / 1e3).toFixed(2)}K`;
   return `$${n.toLocaleString("en-US")}`;
+}
+
+function fmtTokenAmount(n: number): string {
+  if (!Number.isFinite(n) || n <= 0) return "0";
+  if (n >= 1e9) return `${(n / 1e9).toFixed(2)}B`;
+  if (n >= 1e6) return `${(n / 1e6).toFixed(2)}M`;
+  if (n >= 1e3) return `${(n / 1e3).toFixed(2)}K`;
+  return n.toLocaleString("en-US", { maximumFractionDigits: 2 });
+}
+
+function fmtSol(n: number): string {
+  if (!Number.isFinite(n) || n <= 0) return "0";
+  // Cap display precision so absurd values (defensive, shouldn't
+  // ever fire now that the price bug is fixed) still look sane.
+  if (n >= 1000) return n.toLocaleString("en-US", { maximumFractionDigits: 0 });
+  return n.toLocaleString("en-US", { maximumFractionDigits: 2 });
 }
 
 export function LiquidityActivity() {
@@ -69,10 +90,10 @@ export function LiquidityActivity() {
                 </span>
                 <div className="min-w-0">
                   <div className="font-mono text-xs text-white">
-                    {e.solAmount.toLocaleString("en-US", { maximumFractionDigits: 2 })}{" "}
+                    {fmtSol(e.solAmount)}{" "}
                     <span className="text-terminal-dim">SOL</span>
                     <span className="text-terminal-dim"> · </span>
-                    {(e.tokenAmount / 1e6).toFixed(2)}M{" "}
+                    {fmtTokenAmount(e.tokenAmount)}{" "}
                     <span className="text-terminal-dim">ANSEM</span>
                   </div>
                   <div className="font-mono text-[10px] text-terminal-dim">
@@ -90,7 +111,8 @@ export function LiquidityActivity() {
           ))
         )}
       </ul>
-      <div className="border-t border-white/[0.06] px-5 py-2 text-[10px] text-terminal-dim">
+      <div className="flex items-center justify-between gap-3 border-t border-white/[0.06] px-5 py-2 text-[10px] text-terminal-dim">
+        <span>Representative feed from 24h aggregates, not raw txs.</span>
         <a
           href={`https://solscan.io/token/${ANSEM_ADDRESS}`}
           target="_blank"
