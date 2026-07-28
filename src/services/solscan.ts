@@ -1,19 +1,20 @@
 /**
- * Solscan Pro API v2 — server-side service.
+ * Solana Tracker Data API — server-side service.
  * Provides real holders (count + top list) and real swap transactions.
- * Requires SOLSCAN_API_KEY env var. Falls back to empty/null if missing.
+ * Requires SOLANATRACKER_API_KEY env var. Falls back to empty/null if missing.
+ * Free tier: 2,500 req/month, 3 req/sec.
  */
 
-const BASE = "https://pro-api.solscan.io/v2.0";
+const BASE = "https://data.solanatracker.io";
 
 function headers(): Record<string, string> {
-  const key = process.env.SOLSCAN_API_KEY;
+  const key = process.env.SOLANATRACKER_API_KEY;
   if (!key) return {};
-  return { token: key, Accept: "application/json" };
+  return { "x-api-key": key, Accept: "application/json" };
 }
 
 function hasKey(): boolean {
-  return !!process.env.SOLSCAN_API_KEY;
+  return !!process.env.SOLANATRACKER_API_KEY;
 }
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -56,33 +57,38 @@ export async function fetchHolders(
 ): Promise<SolscanHoldersResult | null> {
   if (!hasKey()) return null;
 
-  const url = `${BASE}/token/holders?address=${mint}&page=1&page_size=${pageSize}`;
+  const url = `${BASE}/tokens/${mint}/holders`;
   const res = await fetch(url, { headers: headers(), next: { revalidate: 300 } });
 
   if (!res.ok) return null;
 
   const json = (await res.json()) as {
-    success: boolean;
-    data?: { total: number; items: Array<Record<string, unknown>> };
+    total?: number;
+    accounts?: Array<{
+      wallet: string;
+      amount: number;
+      value?: { quote?: number; usd?: number };
+      percentage?: number;
+    }>;
   };
 
-  if (!json.success || !json.data) return null;
+  if (!json.accounts) return null;
 
-  const items: SolscanHolder[] = (json.data.items ?? []).map((raw) => ({
-    address: String(raw.address ?? ""),
-    owner: String(raw.owner ?? ""),
-    amount: Number(raw.amount ?? 0),
-    amountStr: String(raw.amount_str ?? "0"),
-    decimals: Number(raw.decimals ?? 0),
-    rank: Number(raw.rank ?? 0),
-    value: Number(raw.value ?? 0),
-    percentage: Number(raw.percentage ?? 0),
+  const items: SolscanHolder[] = json.accounts.slice(0, pageSize).map((raw, i) => ({
+    address: raw.wallet,
+    owner: raw.wallet,
+    amount: raw.amount,
+    amountStr: raw.amount.toLocaleString("en-US", { maximumFractionDigits: 0 }),
+    decimals: 6,
+    rank: i + 1,
+    value: raw.value?.usd ?? 0,
+    percentage: raw.percentage ?? 0,
   }));
 
-  return { total: json.data.total, items };
+  return { total: json.total ?? items.length, items };
 }
 
-// ─── Defi Activities (Swaps) ─────────────────────────────────────────────────
+// ─── Trades (Swaps) ──────────────────────────────────────────────────────────
 
 export async function fetchRecentSwaps(
   mint: string,
@@ -90,42 +96,39 @@ export async function fetchRecentSwaps(
 ): Promise<SolscanSwap[]> {
   if (!hasKey()) return [];
 
-  const params = new URLSearchParams({
-    address: mint,
-    page: "1",
-    page_size: String(limit),
-    sort_by: "block_time",
-    sort_order: "desc",
-  });
-  params.append("activity_type[]", "ACTIVITY_TOKEN_SWAP");
-  params.append("activity_type[]", "ACTIVITY_AGG_TOKEN_SWAP");
-
-  const url = `${BASE}/token/defi/activities?${params.toString()}`;
+  const url = `${BASE}/trades/${mint}`;
   const res = await fetch(url, { headers: headers(), next: { revalidate: 60 } });
 
   if (!res.ok) return [];
 
   const json = (await res.json()) as {
-    success: boolean;
-    data?: Array<Record<string, unknown>>;
+    trades?: Array<{
+      tx: string;
+      amount: number;
+      priceUsd: number;
+      volume: number;
+      volumeSol: number;
+      type: string;
+      wallet: string;
+      time: number;
+      program: string;
+      pools?: string[];
+    }>;
   };
 
-  if (!json.success || !json.data) return [];
+  if (!json.trades) return [];
 
-  return json.data.map((raw) => {
-    const routers = (raw.routers ?? {}) as Record<string, unknown>;
-    return {
-      txId: String(raw.trans_id ?? ""),
-      blockTime: Number(raw.block_time ?? 0),
-      activityType: String(raw.activity_type ?? ""),
-      fromAddress: String(raw.from_address ?? ""),
-      platform: String(raw.platform ?? ""),
-      token1: String(routers.token1 ?? ""),
-      token1Decimals: Number(routers.token1_decimals ?? 0),
-      amount1: Number(routers.amount1 ?? 0),
-      token2: String(routers.token2 ?? ""),
-      token2Decimals: Number(routers.token2_decimals ?? 0),
-      amount2: Number(routers.amount2 ?? 0),
-    };
-  });
+  return json.trades.slice(0, limit).map((raw) => ({
+    txId: raw.tx,
+    blockTime: Math.floor(raw.time / 1000),
+    activityType: raw.type === "buy" ? "ACTIVITY_TOKEN_SWAP" : "ACTIVITY_TOKEN_SWAP",
+    fromAddress: raw.wallet,
+    platform: raw.program ?? "jupiter",
+    token1: mint,
+    token1Decimals: 0, // amounts already human-readable from Solana Tracker
+    amount1: raw.amount,
+    token2: "So11111111111111111111111111111111111111112",
+    token2Decimals: 0, // volumeSol already human-readable
+    amount2: raw.volumeSol,
+  }));
 }
