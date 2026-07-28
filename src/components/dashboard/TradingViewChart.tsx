@@ -11,6 +11,7 @@ import { Panel } from "@/components/ui/Panel";
  */
 export function TradingViewChart() {
   const [key, setKey] = useState(0);
+  const [loaded, setLoaded] = useState(false);
 
   return (
     <Panel className="relative overflow-hidden">
@@ -24,7 +25,7 @@ export function TradingViewChart() {
         </div>
         <div className="flex items-center gap-1.5">
           <button
-            onClick={() => setKey((k) => k + 1)}
+            onClick={() => { setLoaded(false); setKey((k) => k + 1); }}
             className="rounded-[2px] border border-line p-1.5 text-dim transition-colors hover:border-ember/40 hover:text-text"
             aria-label="Refresh chart"
           >
@@ -53,6 +54,15 @@ export function TradingViewChart() {
       </div>
 
       <div className="relative h-[420px] w-full">
+        {/* Skeleton while iframe loads */}
+        {!loaded && (
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-panel">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-line border-t-ember" />
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-dim">
+              Loading chart…
+            </span>
+          </div>
+        )}
         <iframe
           id="ansem-chart-frame"
           key={`ds-${key}`}
@@ -60,6 +70,7 @@ export function TradingViewChart() {
           src={`https://dexscreener.com/solana/${ANSEM_PAIR_ADDRESS}?embed=1&theme=dark&info=0`}
           className="absolute inset-0 h-full w-full border-0 bg-transparent"
           loading="lazy"
+          onLoad={() => setLoaded(true)}
           referrerPolicy="no-referrer"
           sandbox="allow-scripts allow-same-origin allow-popups"
         />

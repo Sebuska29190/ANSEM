@@ -39,3 +39,4 @@ next-env.d.ts
 dev.log
 .hermes/plans/2026-07-28_ansem-terminal-redesign-v3.md
 .hermes/plans/2026-07-28_wordpress-feasibility-assessment.md
+.hermes/plans/2026-07-28_netlify-to-vercel-migration.md
