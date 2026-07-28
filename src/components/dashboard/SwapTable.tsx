@@ -1,14 +1,15 @@
 "use client";
 
-import { ArrowDownRight, ArrowUpRight } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, ExternalLink } from "lucide-react";
 import { useSwaps } from "@/hooks/useSwaps";
-import type { SwapEvent } from "@/types";
+import { useTokenData } from "@/hooks/useTokenData";
 import { truncateWallet, timeAgo } from "@/lib/utils";
+import { Panel } from "@/components/ui/Panel";
 
 /**
- * SwapTable — high-density terminal-style feed of recent on-chain swaps.
- * Each row: BUY/SELL chip · amount in/out · USD · wallet (mono) · age.
- * Top 25 only (perf) + buyer rows get a faint green wash, sellers faint red.
+ * SwapTable — REAL on-chain swap transactions from Solscan Pro v2.
+ * Each row: BUY/SELL chip · amount in/out · USD · wallet (→ Solscan) · age.
+ * Includes a real buy/sell pressure bar derived from DexScreener 24h txns.
  */
 
 function fmt(n: number, dp = 2) {
@@ -26,65 +27,92 @@ function usd(n: number | null) {
   return `$${fmt(n, 2)}`;
 }
 
-export function SwapTable({ swaps: extra }: { swaps?: SwapEvent[] } = {}) {
+export function SwapTable() {
   const { data, isLoading } = useSwaps();
-  const all = data ?? extra ?? [];
+  const { data: tokenData } = useTokenData();
+  const all = data ?? [];
+
+  const buys = tokenData?.metrics?.buys24h ?? 0;
+  const sells = tokenData?.metrics?.sells24h ?? 0;
+  const total = buys + sells;
+  const buyRatio = total ? Math.round((buys / total) * 100) : 50;
 
   return (
-    <section className="glass-panel overflow-hidden rounded-2xl">
-      <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-3">
-        <span className="text-xs font-bold uppercase tracking-[0.2em] text-terminal-dim">
-          Recent Swaps
-        </span>
-        <span className="font-mono text-[10px] text-terminal-dim">
-          {all ? `${all.length} txns` : "—"}
-        </span>
+    <Panel className="overflow-hidden">
+      {/* Header + pressure bar */}
+      <div className="border-b border-line px-5 py-3">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-bold uppercase tracking-[0.2em] text-dim">
+            Live Swaps
+          </span>
+          <span className="font-mono text-[10px] text-dim">
+            {all.length > 0 ? `${all.length} real txns` : "on-chain feed"}
+          </span>
+        </div>
+        {total > 0 && (
+          <div className="mt-2.5">
+            <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.15em] text-dim">
+              <span className="text-up">{buys} buys</span>
+              <span className="font-mono">{buyRatio}% buy pressure</span>
+              <span className="text-down">{sells} sells</span>
+            </div>
+            <div className="mt-1.5 flex h-1 w-full overflow-hidden rounded-full bg-raised">
+              <div
+                className="h-full bg-up transition-all duration-700"
+                style={{ width: `${buyRatio}%` }}
+              />
+              <div
+                className="h-full bg-down transition-all duration-700"
+                style={{ width: `${100 - buyRatio}%` }}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="max-h-[480px] overflow-y-auto">
         <table className="w-full font-mono text-xs">
-          <thead className="sticky top-0 z-[1] bg-obsidian/80 backdrop-blur">
-            <tr className="text-left text-[10px] font-bold uppercase tracking-[0.18em] text-terminal-dim">
+          <thead className="sticky top-0 z-[1] bg-panel">
+            <tr className="text-left text-[10px] font-bold uppercase tracking-[0.18em] text-dim">
               <th className="px-4 py-2">Side</th>
               <th className="px-4 py-2">Amount In → Out</th>
               <th className="px-4 py-2 text-right">USD</th>
-              <th className="px-4 py-2 hidden md:table-cell">Wallet</th>
+              <th className="hidden px-4 py-2 md:table-cell">Wallet</th>
               <th className="px-4 py-2 text-right">Age</th>
             </tr>
           </thead>
           <tbody>
             {isLoading ? (
               [...Array(6)].map((_, i) => (
-                <tr key={i} className="border-t border-white/[0.03]">
+                <tr key={i} className="border-t border-line/50">
                   {[...Array(5)].map((__, j) => (
                     <td key={j} className="px-4 py-3">
-                      <div className="h-3 w-16 animate-pulse rounded bg-white/5" />
+                      <div className="h-3 w-16 animate-pulse rounded-[2px] bg-raised" />
                     </td>
                   ))}
                 </tr>
               ))
             ) : all.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-12 text-center text-sm text-terminal-dim">
-                  No swap data yet. Streaming soon.
+                <td
+                  colSpan={5}
+                  className="px-4 py-12 text-center text-sm text-dim"
+                >
+                  No recent swaps. The on-chain feed is unavailable right now.
                 </td>
               </tr>
             ) : (
               all.slice(0, 25).map((s) => (
                 <tr
                   key={s.txHash}
-                  className={`border-t border-white/[0.03] transition-colors hover:bg-white/[0.025] ${
-                    s.type === "buy"
-                      ? "hover:border-bull-up/20"
-                      : "hover:border-bull-down/20"
-                  }`}
+                  className="border-t border-line/50 transition-colors hover:bg-raised/50"
                 >
                   <td className="px-4 py-3">
                     <span
-                      className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.18em] ${
+                      className={`inline-flex items-center gap-1 rounded-[2px] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.18em] ${
                         s.type === "buy"
-                          ? "bg-bull-up/10 text-bull-up"
-                          : "bg-bull-down/10 text-bull-down"
+                          ? "bg-up/10 text-up"
+                          : "bg-down/10 text-down"
                       }`}
                     >
                       {s.type === "buy" ? (
@@ -95,17 +123,32 @@ export function SwapTable({ swaps: extra }: { swaps?: SwapEvent[] } = {}) {
                       {s.type}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-white">
-                    {fmt(s.amountIn, 4)} <span className="text-terminal-dim">{s.tokenIn}</span>
-                    <span className="text-terminal-dim"> → </span>
-                    {fmt(s.amountOut, 4)} <span className="text-terminal-dim">{s.tokenOut}</span>
+                  <td className="px-4 py-3 text-text">
+                    {fmt(s.amountIn, 4)} <span className="text-dim">{s.tokenIn}</span>
+                    <span className="text-mute"> → </span>
+                    {fmt(s.amountOut, 4)} <span className="text-dim">{s.tokenOut}</span>
                   </td>
-                  <td className="px-4 py-3 text-right text-white">{usd(s.usdValue)}</td>
-                  <td className="hidden px-4 py-3 text-terminal-dim md:table-cell">
-                    {truncateWallet(s.wallet)}
+                  <td className="px-4 py-3 text-right text-text">{usd(s.usdValue)}</td>
+                  <td className="hidden px-4 py-3 md:table-cell">
+                    <a
+                      href={`https://solscan.io/account/${s.wallet}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-dim transition-colors hover:text-info"
+                    >
+                      {truncateWallet(s.wallet)}
+                      <ExternalLink className="h-2.5 w-2.5" />
+                    </a>
                   </td>
-                  <td className="px-4 py-3 text-right text-terminal-dim">
-                    {timeAgo(s.timestamp)}
+                  <td className="px-4 py-3 text-right">
+                    <a
+                      href={`https://solscan.io/tx/${s.txHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-dim transition-colors hover:text-info"
+                    >
+                      {timeAgo(s.timestamp)}
+                    </a>
                   </td>
                 </tr>
               ))
@@ -113,9 +156,9 @@ export function SwapTable({ swaps: extra }: { swaps?: SwapEvent[] } = {}) {
           </tbody>
         </table>
       </div>
-      <div className="border-t border-white/[0.06] px-5 py-2 text-[10px] text-terminal-dim">
-        Representative feed derived from 24h DexScreener aggregates, not individual on-chain transactions.
+      <div className="border-t border-line px-5 py-2 text-[10px] text-dim">
+        Real on-chain transactions via Solscan. Click a wallet or age to inspect on Solscan.
       </div>
-    </section>
+    </Panel>
   );
 }

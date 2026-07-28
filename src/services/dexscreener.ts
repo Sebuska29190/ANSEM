@@ -47,13 +47,29 @@ export async function fetchTokenData(): Promise<DexScreenerTokenData> {
     throw new Error(`DexScreener token API error: ${res.status}`);
   }
 
-  const pairs = (await res.json()) as TokenPair[];
-  const topPair = pairs?.[0] ?? null;
+  const rawPairs = (await res.json()) as Array<
+    TokenPair & { pairCreatedAt?: number }
+  >;
+  const pairs = (rawPairs ?? []).map(normalizePair);
+  const topPair = pairs[0] ?? null;
 
   return {
-    pairs: pairs ?? [],
+    pairs,
     topPair,
     metrics: topPair ? buildMetrics(topPair) : null,
+  };
+}
+
+/**
+ * DexScreener returns `pairCreatedAt` (ms epoch); our TokenPair type exposes
+ * it as `createdAt`. Map it so consumers (e.g. Tokenomics "Launched") work.
+ */
+function normalizePair(
+  pair: TokenPair & { pairCreatedAt?: number }
+): TokenPair {
+  return {
+    ...pair,
+    createdAt: pair.createdAt ?? pair.pairCreatedAt ?? 0,
   };
 }
 

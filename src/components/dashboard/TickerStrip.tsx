@@ -7,8 +7,7 @@ import { formatBigUSD } from "@/lib/utils";
 
 /**
  * TickerStrip — slim horizontal data tape below the hero.
- * Reserves a 50 px slot before live data arrives so the rest
- * of the page doesn't shift when metrics first resolve.
+ * Reserves a stable slot before live data arrives (no CLS).
  */
 
 function SparkBar({ values, up }: { values: number[]; up: boolean }) {
@@ -25,7 +24,7 @@ function SparkBar({ values, up }: { values: number[]; up: boolean }) {
             width={5}
             height={h}
             rx={1}
-            fill={up ? "#00C853" : "#FF1744"}
+            fill={up ? "#2FBF71" : "#F0455C"}
             opacity={0.85}
           />
         );
@@ -41,19 +40,12 @@ export function TickerStrip() {
   const m = data?.metrics;
   const hasReal = !!m && m.priceUsd > 0;
 
-  // Skeleton placeholder so the slot has a stable height before live data lands
   if (!hasReal) {
     return (
-      <div
-        className="relative border-y border-white/[0.06] bg-obsidian/80 backdrop-blur-md"
-        aria-hidden
-      >
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-ember/60 to-transparent" />
-        <div className="flex h-[52px] min-h-[52px] items-center justify-center gap-2 px-4 text-[10px] font-bold uppercase tracking-[0.2em] text-terminal-dim">
-          <span className="relative flex h-1.5 w-1.5">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-ember opacity-50" />
-            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-ember" />
-          </span>
+      <div className="relative border-y border-line bg-panel" aria-hidden>
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-ember/50 to-transparent" />
+        <div className="flex h-[52px] min-h-[52px] items-center justify-center gap-2 px-4 text-[10px] font-bold uppercase tracking-[0.2em] text-dim">
+          <span className="h-1.5 w-1.5 animate-live-pulse rounded-full bg-ember" />
           Awaiting first live ticks…
         </div>
       </div>
@@ -79,54 +71,25 @@ export function TickerStrip() {
       delta: m!.priceChange24h ?? 0,
       spark: [2, 3, 2, 4, 5, 4, 6],
     },
-    {
-      label: "24H VOL",
-      value: formatBigUSD(m!.volume24h ?? 0),
-      delta: null,
-      spark: [3, 1, 4, 2, 5, 3, 4],
-    },
-    {
-      label: "LIQUIDITY",
-      value: formatBigUSD(m!.liquidityUsd ?? 0),
-      delta: null,
-      spark: [4, 4, 4, 5, 4, 4, 5],
-    },
-    {
-      label: "BUYS · 24H",
-      value: `${m!.buys24h}`,
-      delta: null,
-      spark: [2, 3, 4, 3, 5, 6, 5],
-    },
-    {
-      label: "SELLS · 24H",
-      value: `${m!.sells24h}`,
-      delta: null,
-      spark: [3, 2, 3, 4, 3, 5, 3],
-    },
+    { label: "24H VOL", value: formatBigUSD(m!.volume24h ?? 0), delta: null, spark: [3, 1, 4, 2, 5, 3, 4] },
+    { label: "LIQUIDITY", value: formatBigUSD(m!.liquidityUsd ?? 0), delta: null, spark: [4, 4, 4, 5, 4, 4, 5] },
+    { label: "BUYS · 24H", value: `${m!.buys24h}`, delta: null, spark: [2, 3, 4, 3, 5, 6, 5] },
+    { label: "SELLS · 24H", value: `${m!.sells24h}`, delta: null, spark: [3, 2, 3, 4, 3, 5, 3] },
   ];
 
   return (
-    <div className="relative border-y border-white/[0.06] bg-obsidian/80 backdrop-blur-md">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-ember/60 to-transparent" />
+    <div className="relative border-y border-line bg-panel">
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-ember/50 to-transparent" />
       <div className="min-h-[52px] py-3">
         <Marquee speedSeconds={45}>
           {chips.map((c, i) => (
-            <div
-              key={`${c.label}-${i}`}
-              className="flex items-center gap-3 font-mono text-xs"
-            >
-              <span className="font-bold uppercase tracking-[0.18em] text-terminal-dim">
-                {c.label}
-              </span>
-              <span className="text-white">{c.value}</span>
+            <div key={`${c.label}-${i}`} className="flex items-center gap-3 font-mono text-xs">
+              <span className="font-bold uppercase tracking-[0.18em] text-dim">{c.label}</span>
+              <span className="text-text">{c.value}</span>
               {c.delta !== null && (
                 <>
                   <SparkBar values={c.spark} up={c.delta >= 0} />
-                  <span
-                    className={
-                      c.delta >= 0 ? "text-bull-up" : "text-bull-down"
-                    }
-                  >
+                  <span className={c.delta >= 0 ? "text-up" : "text-down"}>
                     {c.delta >= 0 ? (
                       <TrendingUp className="inline h-3 w-3" />
                     ) : (
@@ -136,9 +99,7 @@ export function TickerStrip() {
                   </span>
                 </>
               )}
-              {i < chips.length - 1 && (
-                <span aria-hidden className="mx-4 h-3 w-px bg-white/10" />
-              )}
+              {i < chips.length - 1 && <span aria-hidden className="mx-4 h-3 w-px bg-line" />}
             </div>
           ))}
         </Marquee>

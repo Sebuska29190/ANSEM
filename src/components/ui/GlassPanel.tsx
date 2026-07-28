@@ -44,7 +44,7 @@ export function Eyebrow({
     <div className="mb-4 flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.25em]">
       <span className={`font-mono ${color}`}>{index}</span>
       <span className="h-px w-8 bg-white/10" />
-      <span className="text-terminal-dim">{label}</span>
+      <span className="text-dim">{label}</span>
     </div>
   );
 }

@@ -49,10 +49,10 @@ export function NumberTicker({
 
   const colorCls =
     dir === "up"
-      ? "text-bull-up"
+      ? "text-up"
       : dir === "down"
-      ? "text-bull-down"
-      : "text-white";
+        ? "text-down"
+        : "text-text";
 
   return (
     <span className={`relative inline-flex items-baseline tabular-nums ${className}`}>
@@ -65,7 +65,7 @@ export function NumberTicker({
             y: 0,
             scale: 1,
             color:
-              dir === "up" ? "#00C853" : dir === "down" ? "#FF1744" : "#ffffff",
+              dir === "up" ? "#2FBF71" : dir === "down" ? "#F0455C" : "#F2EDE6",
           }}
           exit={{ opacity: 0, y: -6 }}
           transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
@@ -79,10 +79,10 @@ export function NumberTicker({
           aria-hidden
           className={`pointer-events-none ml-1 text-xs font-medium ${
             dir === "up"
-              ? "text-bull-up"
+              ? "text-up"
               : dir === "down"
-              ? "text-bull-down"
-              : "text-terminal-dim"
+              ? "text-down"
+              : "text-dim"
           }`}
         >
           {dir === "up" ? "▲" : dir === "down" ? "▼" : "•"}
